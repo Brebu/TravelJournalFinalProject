@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "632006679611",
+    "firebase_url": "https://travel-journal-bkl.firebaseio.com",
+    "project_id": "travel-journal-bkl",
+    "storage_bucket": "travel-journal-bkl.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:632006679611:android:a483723a5ccd0fcb",
+        "android_client_info": {
+          "package_name": "com.brebu.traveljournalfinalproject"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "632006679611-6me96csmmqv9g94qc6c7o8legamrf826.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brebu.traveljournalfinalproject",
+            "certificate_hash": "6ec334fe2c0785cf1f7c674c3327a55d6adad6c9"
+          }
+        },
+        {
+          "client_id": "632006679611-b34frskm1pv5chpc6h66e4vm47flo55u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB99BxI1N0Gvcdq22CmMoPIysQNk_JD-Ws"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "632006679611-b34frskm1pv5chpc6h66e4vm47flo55u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
