@@ -24,6 +24,8 @@ import com.brebu.traveljournalfinalproject.R;
 import com.brebu.traveljournalfinalproject.SignInActivity;
 import com.brebu.traveljournalfinalproject.models.Trip;
 import com.brebu.traveljournalfinalproject.recyclerview.TripsAdapter;
+import com.brebu.traveljournalfinalproject.room.TravelJournalDatabase;
+import com.brebu.traveljournalfinalproject.room.Users;
 import com.brebu.traveljournalfinalproject.utils.Constants;
 import com.brebu.traveljournalfinalproject.utils.OnTripSelectedListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -34,6 +36,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -42,11 +45,13 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import static com.brebu.traveljournalfinalproject.utils.BitmapProcess.bitmapToData;
 
-public class HomeFragment extends Fragment implements OnTripSelectedListener, Constants {
+public class HomeFragment extends Fragment implements OnTripSelectedListener<DocumentSnapshot>, Constants {
+
 
     //Constants
     private static final String TAG = "HomeFragment";
@@ -62,6 +67,9 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
     private TripsAdapter mAdapter;
     private FragmentActivity mFragmentActivity;
     private String mMail;
+    public static List<Trip> mTripList;
+
+    private TravelJournalDatabase mTravelJournalDatabase;
 
 
     @Override
@@ -69,15 +77,19 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.content_navigation_drawer, container, false);
         mFragmentActivity = getActivity();
-        mFragmentActivity.setTitle("Home Fragment");
+        mFragmentActivity.setTitle("Home fragment");
         initFirebase();
         initView(view);
+        new LoadItemAsync().execute();
+        mTravelJournalDatabase =
+                TravelJournalDatabase.getTravelJournalDatabase(getActivity());
         return view;
     }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
     private void initView(View view) {
@@ -86,10 +98,10 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
         mQuery = mFirebaseFirestore.collection(mMail)
                 .orderBy("tripStartDate", Query.Direction.DESCENDING)
                 .limit(DISPLAY_LIMIT);
-        mAdapter = new TripsAdapter(mQuery,this, mFragmentActivity);
+        mAdapter = new TripsAdapter(mQuery, this, mFragmentActivity);
         mRecyclerViewTrips.setAdapter(mAdapter);
         mAdapter.startListening();
-        mAdapter = new TripsAdapter(mQuery,this, mFragmentActivity);
+        mAdapter = new TripsAdapter(mQuery, this, mFragmentActivity);
     }
 
 
@@ -125,8 +137,10 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
         bundle.putString(TRIP_DESTINATION, trip.getString(TRIP_DESTINATION));
         bundle.putString(TRIP_PRICE, String.valueOf(trip.getDouble(TRIP_PRICE)));
         bundle.putString(TRIP_RATING, String.valueOf(trip.getDouble(TRIP_RATING)));
-        bundle.putString(START_DATE, DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getDate(START_DATE)));
-        bundle.putString(END_DATE, DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getDate(END_DATE)));
+        bundle.putString(START_DATE,
+                DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getDate(START_DATE)));
+        bundle.putString(END_DATE,
+                DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getDate(END_DATE)));
         bundle.putString(FIRESTORE_PATH, trip.getString(FIRESTORE_PATH));
         bundle.putString("tripFavourite", String.valueOf(trip.getBoolean("tripFavourite")));
         displayTrip.setArguments(bundle);
@@ -142,34 +156,54 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
     }
 
     @Override
-    public void onIconPressed(DocumentSnapshot trip, ImageButton imageButton) {
+    public void onIconPressed(final DocumentSnapshot trip, ImageButton imageButton) {
 
         String tripId = trip.getId();
+        final Trip tripWithId = trip.toObject(Trip.class);
+        tripWithId.setUserId(mMail);
 
-        if ((boolean) trip.get("tripFavourite")) {
-            mTrips.document(tripId).update("tripFavourite", false);
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    //tjdb.tripDao().deleteTrip(trip.toObject(Trip.class));
-                }
-            });
-            Toast.makeText(mFragmentActivity, "Trip removed from favourites!", Toast.LENGTH_SHORT).show();
-        } else {
+        if (!(boolean) trip.get("tripFavourite")) {
             mTrips.document(tripId).update("tripFavourite", true);
             AsyncTask.execute(new Runnable() {
                 @Override
                 public void run() {
-                    //tjdb.tripDao().addTrip(trip.toObject(Trip.class));
+
+                    boolean contain = false;
+
+                    for (Trip trip : mTravelJournalDatabase.tripsDao().getAllTrips()) {
+                        if (trip.getUserId().equals(tripWithId.getTripId())) {
+                            contain = true;
+                        }
+                    }
+
+                    if (!contain) {
+                        mTravelJournalDatabase.tripsDao().insertTrip(tripWithId);
+                    }
+                    
+                    new LoadItemAsync().execute();
                 }
             });
-            Toast.makeText(mFragmentActivity, "Trip marked as favourite!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(mFragmentActivity, "Trip added to favourites!",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            mTrips.document(tripId).update("tripFavourite", false);
+            AsyncTask.execute(new Runnable() {
+                @Override
+                public void run() {
+                    mTravelJournalDatabase.tripsDao().deleteTrip(tripWithId);
+                    new LoadItemAsync().execute();
+                }
+            });
+            Toast.makeText(mFragmentActivity, "Trip removed from favourites!",
+                    Toast.LENGTH_SHORT).show();
         }
     }
 
     @Override
     public void onDeletePressed(DocumentSnapshot trip, ImageButton imageButton) {
-        Toast.makeText(mFragmentActivity, "For delete press long!", Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(mFragmentActivity, mTripList.size() + "dsa", Toast.LENGTH_LONG).show();
+
     }
 
     @Override
@@ -241,6 +275,7 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
                             @Override
                             public void onSuccess(Uri uri) {
                                 trip.setTripImageFirestore(uri.toString());
+                                trip.setUserId(mMail);
                                 mTrips.document(trip.getTripId()).set(trip);
                                 Toast.makeText(mFragmentActivity, "Trip added successfully!",
                                         Toast.LENGTH_SHORT).show();
@@ -316,6 +351,41 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener, Co
                     });
                 }
             }
+        }
+    }
+
+    private class LoadItemAsync extends AsyncTask<Void, Void, List<Trip>> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            TravelJournalDatabase.getTravelJournalDatabase(mFragmentActivity);
+        }
+
+        @Override
+        protected List<Trip> doInBackground(Void... voids) {
+            TravelJournalDatabase database =
+                    TravelJournalDatabase.getTravelJournalDatabase(mFragmentActivity);
+
+            boolean contain = false;
+
+            for (Users user : database.usersDao().getAllUsers()) {
+                if (user.getUserId().equals(mMail)) {
+                    contain = true;
+                }
+            }
+
+            if (!contain) {
+                database.usersDao().insertUser(new Users(mMail));
+            }
+
+            return database.tripsDao().getAllTrips();
+        }
+
+        @Override
+        protected void onPostExecute(List<Trip> items) {
+            super.onPostExecute(items);
+            mTripList = items;
         }
     }
 }

@@ -2,18 +2,16 @@ package com.brebu.traveljournalfinalproject.utils;
 
 import android.widget.ImageButton;
 
-import com.google.firebase.firestore.DocumentSnapshot;
+public interface OnTripSelectedListener<T> {
 
-public interface OnTripSelectedListener {
+    void onTripSelected(T trip);
 
-    void onTripSelected(DocumentSnapshot trip);
+    void onTripLongPressed(T trip);
 
-    void onTripLongPressed(DocumentSnapshot trip);
+    void onIconPressed(T trip, ImageButton imageButton);
 
-    void onIconPressed(DocumentSnapshot trip, ImageButton imageButton);
+    void onDeletePressed(T trip, ImageButton imageButton);
 
-    void onDeletePressed(DocumentSnapshot trip, ImageButton imageButton);
-
-    void onDeleteLongPressed(DocumentSnapshot trip, ImageButton imageButton);
+    void onDeleteLongPressed(T trip, ImageButton imageButton);
 
 }

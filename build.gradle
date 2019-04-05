@@ -23,6 +23,10 @@ allprojects {
     }
 }
 
+ext {
+    archRoomVersion = "1.1.1"
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

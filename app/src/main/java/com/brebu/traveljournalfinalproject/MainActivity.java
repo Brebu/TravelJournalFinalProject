@@ -23,8 +23,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brebu.traveljournalfinalproject.fragment.FavouriteFragment;
 import com.brebu.traveljournalfinalproject.fragment.HomeFragment;
 import com.brebu.traveljournalfinalproject.models.Trip;
+import com.brebu.traveljournalfinalproject.room.TravelJournalDatabase;
 import com.brebu.traveljournalfinalproject.utils.Constants;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
@@ -237,7 +239,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.nav_home) {
             createDynamicFragment(new HomeFragment());
         } else if (id == R.id.nav_gallery) {
-
+            createDynamicFragment(new FavouriteFragment());
         } else if (id == R.id.nav_slideshow) {
 
         } else if (id == R.id.nav_manage) {

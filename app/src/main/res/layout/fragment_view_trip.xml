@@ -38,18 +38,21 @@
                 app:layout_constraintStart_toEndOf="@+id/textView_ViewTravelStartDate" />
 
             <ImageView
+
+                android:clickable="true"
+                android:foreground="?android:attr/selectableItemBackground"
                 android:id="@+id/imageView_ViewTravelImage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:adjustViewBounds="false"
                 android:contentDescription="@string/view_travel_image"
                 android:cropToPadding="true"
-                android:scaleType="centerCrop"
-                android:src="@drawable/no_picture"
+                android:scaleType="center"
                 app:layout_constraintBottom_toTopOf="@+id/textView_ViewTravelName"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                android:focusable="true" />
 
             <ImageView
                 android:id="@+id/imageView_ViewTravelFavourite"
