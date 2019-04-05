@@ -1,7 +1,7 @@
 package com.brebu.traveljournalfinalproject.fragment;
 
-
-import android.graphics.Movie;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -14,51 +14,82 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.brebu.traveljournalfinalproject.R;
+import com.brebu.traveljournalfinalproject.SignInActivity;
 import com.brebu.traveljournalfinalproject.models.Trip;
 import com.brebu.traveljournalfinalproject.recyclerview.FavouriteTripsAdapter;
+
+import com.brebu.traveljournalfinalproject.room.DatabaseInitializer;
+import com.brebu.traveljournalfinalproject.room.TravelJournalDatabase;
 import com.brebu.traveljournalfinalproject.utils.Constants;
 import com.brebu.traveljournalfinalproject.utils.OnTripSelectedListener;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FirebaseStorage;
 
 import java.text.DateFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
+import java.util.Locale;
 
 public class FavouriteFragment extends Fragment implements OnTripSelectedListener<Trip>, Constants {
 
     private RecyclerView mRecyclerViewMovies;
     private FavouriteTripsAdapter mAdapter;
-    private FragmentActivity mFragmentActivity;
-    private List<Movie> mMovieList;
+    private FragmentActivity mFragmentContext;
 
+    private FirebaseUser mFirebaseUser;
+    private FirebaseAuth mFirebaseAuth;
+    private FirebaseFirestore mFirebaseFirestore;
+    private FirebaseStorage mFirebaseStorage;
+    private CollectionReference mTrips;
+    private String mMail;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.content_navigation_drawer, container, false);
-        mFragmentActivity = getActivity();
-        if (mFragmentActivity != null) {
-            mFragmentActivity.setTitle("Favourite Trips");
-        }
         initView(view);
+        initFirebase();
+
         return view;
     }
 
     private void initView(View view) {
-        mFragmentActivity = getActivity();
+
+        mFragmentContext = getActivity();
+        if (mFragmentContext != null) {
+            mFragmentContext.setTitle("Favourite Trips");
+        }
+
         mRecyclerViewMovies = view.findViewById(R.id.recycler_view_x);
-        mRecyclerViewMovies.setLayoutManager(new LinearLayoutManager(mFragmentActivity));
-        mMovieList = new ArrayList<>();
-        mAdapter = new FavouriteTripsAdapter(HomeFragment.mTripList, mFragmentActivity,this);
+        mRecyclerViewMovies.setLayoutManager(new LinearLayoutManager(mFragmentContext));
+        mAdapter = new FavouriteTripsAdapter(DatabaseInitializer.sTripList, mFragmentContext,this);
         mRecyclerViewMovies.setAdapter(mAdapter);
     }
 
+    private void initFirebase() {
+        mFirebaseStorage = FirebaseStorage.getInstance();
+        mFirebaseAuth = FirebaseAuth.getInstance();
+        mFirebaseUser = mFirebaseAuth.getCurrentUser();
+        if (mFirebaseUser == null) {
+            startActivity(new Intent(mFragmentContext, SignInActivity.class));
+            mFragmentContext.finish();
+        } else {
+            mMail = mFirebaseUser.getEmail();
+            if (mMail != null) {
+                mFirebaseFirestore = FirebaseFirestore.getInstance();
+                mTrips = mFirebaseFirestore.collection(mMail);
+            }
+        }
+    }
+
     private void createDynamicFragment(Fragment fragment) {
-        FragmentManager fragmentManager = mFragmentActivity.getSupportFragmentManager();
+        FragmentManager fragmentManager = mFragmentContext.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, fragment);
         fragmentTransaction.addToBackStack("home").commit();
@@ -66,7 +97,7 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
 
     @Override
     public void onTripSelected(Trip trip) {
-        ViewTripFavouriteFragment displayTrip = new ViewTripFavouriteFragment();
+        ViewTripFragment displayTrip = new ViewTripFragment();
         Bundle bundle = new Bundle();
         bundle.putString(TRIP_NAME, trip.getTripName());
         bundle.putString(TRIP_DESTINATION, trip.getTripDestination());
@@ -89,18 +120,24 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
 
     @Override
     public void onIconPressed(Trip trip, ImageButton imageButton) {
-
+        Toast.makeText(mFragmentContext, "Please make favourite from home", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onDeletePressed(Trip trip, ImageButton imageButton) {
-        HomeFragment.mTripList.remove(trip);
-        mAdapter.notifyDataSetChanged();
-
+        Toast.makeText(mFragmentContext, "For delete press long", Toast.LENGTH_LONG).show();
     }
 
     @Override
-    public void onDeleteLongPressed(Trip trip, ImageButton imageButton) {
+    public void onDeleteLongPressed(final Trip trip, ImageButton imageButton) {
+        DatabaseInitializer.sTripList.remove(trip);
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteTrip(trip);
+            }
+        });
 
+        mAdapter.notifyDataSetChanged();
     }
 }

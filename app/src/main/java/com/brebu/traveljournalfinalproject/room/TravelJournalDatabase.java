@@ -1,6 +1,5 @@
 package com.brebu.traveljournalfinalproject.room;
 
-
 import android.arch.persistence.room.Database;
 import android.arch.persistence.room.Room;
 import android.arch.persistence.room.RoomDatabase;
@@ -12,7 +11,7 @@ import com.brebu.traveljournalfinalproject.models.Trip;
 public abstract class TravelJournalDatabase extends RoomDatabase {
 
     private static TravelJournalDatabase INSTANCE;
-    private static String DATABASE_NAME = "travel_database";
+    private static String DATABASE_NAME = "acd";
 
     public abstract UsersDao usersDao();
     public abstract TripDao tripsDao();
@@ -21,7 +20,7 @@ public abstract class TravelJournalDatabase extends RoomDatabase {
         if (INSTANCE == null) {
             INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                     TravelJournalDatabase.class,
-                    "DATABASE_NAME").build();
+                    DATABASE_NAME).build();
         }
         return INSTANCE;
     }

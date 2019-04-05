@@ -50,16 +50,14 @@ public class ViewTripFragment extends Fragment implements Constants {
             mTextViewTripName.setText(bundle.getString(TRIP_NAME));
             mTextViewTripDestination.setText(bundle.getString(TRIP_DESTINATION));
 
-            String tempPrice = bundle.getString(TRIP_PRICE);
-            if (tempPrice != null) {
-                String price = tempPrice.substring(0, tempPrice.length() - 2);
-                mTextViewTripPrice.setText(" " + price + " € ");
-            }
+
+                mTextViewTripPrice.setText(" " + bundle.getInt(TRIP_PRICE) + " € ");
+
 
             mTextViewTripStartDate.setText("Start date: "+bundle.getString(START_DATE));
             mTextViewTripEndDate.setText("End date: "+bundle.getString(END_DATE));
 
-            float convertedRating = Float.parseFloat(bundle.getString(TRIP_RATING));
+            float convertedRating = bundle.getFloat(TRIP_RATING);
             mRatingBarTripRating.setRating(convertedRating);
 
             String isFavourite = bundle.getString("tripFavourite");

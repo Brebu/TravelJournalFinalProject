@@ -1,5 +1,4 @@
 package com.brebu.traveljournalfinalproject;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -26,6 +25,7 @@ import android.widget.Toast;
 import com.brebu.traveljournalfinalproject.fragment.FavouriteFragment;
 import com.brebu.traveljournalfinalproject.fragment.HomeFragment;
 import com.brebu.traveljournalfinalproject.models.Trip;
+import com.brebu.traveljournalfinalproject.room.DatabaseInitializer;
 import com.brebu.traveljournalfinalproject.room.TravelJournalDatabase;
 import com.brebu.traveljournalfinalproject.utils.Constants;
 import com.bumptech.glide.Glide;
@@ -49,6 +49,7 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import static com.brebu.traveljournalfinalproject.utils.BitmapProcess.bitmapToData;
@@ -62,7 +63,8 @@ public class MainActivity extends AppCompatActivity
 
 
     //Firebase and Google class instances
-    private String mUsername, mPhotoUrl, mMail;
+    private static String mMail;
+    private String mUsername, mPhotoUrl;
     private FirebaseAuth mFirebaseAuth;
     private FirebaseUser mFirebaseUser;
     private FirebaseFirestore mFirebaseFirestore;
@@ -81,6 +83,9 @@ public class MainActivity extends AppCompatActivity
     private TextView mTextViewProfileName;
     private TextView mTextViewProfileMail;
 
+    public static String getMail() {
+        return mMail;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +96,7 @@ public class MainActivity extends AppCompatActivity
         initFireStore();
         initFirebase();
         initGoogleClient();
+        DatabaseInitializer.populateAsync(TravelJournalDatabase.getTravelJournalDatabase(this));
     }
 
     private void initFirebaseStorage() {
@@ -183,7 +189,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void createDynamicFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentManager fragmentManager = this.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, fragment);
         fragmentTransaction.addToBackStack("MainActivity").commit();
@@ -199,13 +205,6 @@ public class MainActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        createDynamicFragment(new HomeFragment());
     }
 
     @Override

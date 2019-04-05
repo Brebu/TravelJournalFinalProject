@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 
 import com.brebu.traveljournalfinalproject.R;
 import com.brebu.traveljournalfinalproject.models.Trip;
-import com.brebu.traveljournalfinalproject.recyclerview.TripsViewHolder;
 import com.brebu.traveljournalfinalproject.utils.OnTripSelectedListener;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
