@@ -167,7 +167,7 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
         bundle.putString(END_DATE,
                 DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getDate(END_DATE)));
         bundle.putString(FIRESTORE_PATH, trip.getString(FIRESTORE_PATH));
-        bundle.putString("tripFavourite", String.valueOf(true));
+        bundle.putString("tripFavourite", String.valueOf(trip.getBoolean("tripFavourite")));
         displayTrip.setArguments(bundle);
         createDynamicFragment(displayTrip);
     }
