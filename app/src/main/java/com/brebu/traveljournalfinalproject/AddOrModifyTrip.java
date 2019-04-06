@@ -14,6 +14,9 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -28,6 +31,7 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brebu.traveljournalfinalproject.fragment.HomeFragment;
 import com.brebu.traveljournalfinalproject.utils.Constants;
 import com.brebu.traveljournalfinalproject.utils.CustomDatePickerFragment;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -227,12 +231,16 @@ public class AddOrModifyTrip extends AppCompatActivity implements DatePickerDial
         startActivityForResult(intent, TAKE_RC);
     }
 
-    private boolean checkPermission() {
+    private boolean checkCameraPermission() {
         int cameraResult = ContextCompat.checkSelfPermission(getApplicationContext(),
                 Manifest.permission.CAMERA);
+        return cameraResult == 0;
+    }
+
+    private boolean checkGalleryPermission() {
         int writeResult = ContextCompat.checkSelfPermission(getApplicationContext(),
                 Manifest.permission.CAMERA);
-        return cameraResult == 0 && writeResult == 0;
+        return writeResult == 0;
     }
 
     private File createImageFile() {
@@ -283,17 +291,23 @@ public class AddOrModifyTrip extends AppCompatActivity implements DatePickerDial
     }
 
     public void onClickSelectPhoto(View view) {
-        Intent pickIntent = new Intent(Intent.ACTION_PICK,
-                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(Intent.createChooser(pickIntent, "Select Picture"),
-                SELECT_RC);
+
+        if (!checkGalleryPermission()) {
+            ActivityCompat.requestPermissions(AddOrModifyTrip.this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSION_RT);
+        } else {
+            Intent pickIntent = new Intent(Intent.ACTION_PICK,
+                    android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+            startActivityForResult(Intent.createChooser(pickIntent, "Select Picture"),
+                    SELECT_RC);
+        }
     }
 
     public void onClickTakePhoto(View view) {
-        if (!checkPermission()) {
+        if (!checkCameraPermission()) {
             ActivityCompat.requestPermissions(AddOrModifyTrip.this,
-                    new String[]{Manifest.permission.CAMERA,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    new String[]{Manifest.permission.CAMERA},
                     PERMISSION_RC);
         } else {
             openAndDisplay();
@@ -360,6 +374,17 @@ public class AddOrModifyTrip extends AppCompatActivity implements DatePickerDial
                             Toast.LENGTH_SHORT).show();
                     openAndDisplay();
                 }
+                break;
+            case PERMISSION_RT:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Toast.makeText(getApplicationContext(), "Permission Granted",
+                            Toast.LENGTH_SHORT).show();
+                    Intent pickIntent = new Intent(Intent.ACTION_PICK,
+                            android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    startActivityForResult(Intent.createChooser(pickIntent, "Select Picture"),
+                            SELECT_RC);
+                }
+                break;
         }
     }
 

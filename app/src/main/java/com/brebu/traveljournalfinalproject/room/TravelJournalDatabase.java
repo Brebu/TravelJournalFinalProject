@@ -11,7 +11,7 @@ import com.brebu.traveljournalfinalproject.models.Trip;
 public abstract class TravelJournalDatabase extends RoomDatabase {
 
     private static TravelJournalDatabase INSTANCE;
-    private static String DATABASE_NAME = "acd";
+    private static String DATABASE_NAME = "acr";
 
     public abstract UsersDao usersDao();
     public abstract TripDao tripsDao();

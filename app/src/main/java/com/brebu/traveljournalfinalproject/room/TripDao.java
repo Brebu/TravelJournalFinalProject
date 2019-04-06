@@ -19,8 +19,8 @@ import java.util.List;
 public interface TripDao {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("Select * from trip")
-    List<Trip> getAllTrips();
+    @Query("Select * from trip where user_id=:mMail")
+    List<Trip> getAllTrips(String mMail);
 
     @Insert
     void insertTrip(Trip trip);
@@ -30,6 +30,9 @@ public interface TripDao {
 
     @Query("DELETE FROM trip WHERE user_id = :userId")
     void deleteByUserId(String userId);
+
+    @Query("DELETE FROM trip WHERE tripId = :tripId")
+    void deleteByTripId(String tripId);
 
     @Update
     void updateTrip(Trip trip);

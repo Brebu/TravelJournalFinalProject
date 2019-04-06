@@ -19,5 +19,6 @@ public interface Constants {
     int DISPLAY_LIMIT = 100;
     int SELECT_RC = 30;
     int TAKE_RC = 27;
-    int PERMISSION_RC = 1987;
+    int PERMISSION_RC = 2000;
+    int PERMISSION_RT = 2001;
 }

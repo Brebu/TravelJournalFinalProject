@@ -48,7 +48,7 @@ public class DatabaseInitializer {
                 mDb.usersDao().insertUser(new Users(MainActivity.getMail()));
             }
 
-            return mDb.tripsDao().getAllTrips();
+            return mDb.tripsDao().getAllTrips(MainActivity.getMail());
         }
 
         @Override

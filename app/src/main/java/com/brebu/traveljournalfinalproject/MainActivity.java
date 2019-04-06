@@ -1,8 +1,10 @@
 package com.brebu.traveljournalfinalproject;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -49,7 +51,6 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import static com.brebu.traveljournalfinalproject.utils.BitmapProcess.bitmapToData;
@@ -60,6 +61,8 @@ public class MainActivity extends AppCompatActivity
 
     //Constants
     private static final String TAG = "MainActivity";
+
+    public static final Handler HANDLER = new Handler();
 
 
     //Firebase and Google class instances
@@ -87,6 +90,7 @@ public class MainActivity extends AppCompatActivity
         return mMail;
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -97,6 +101,8 @@ public class MainActivity extends AppCompatActivity
         initFirebase();
         initGoogleClient();
         DatabaseInitializer.populateAsync(TravelJournalDatabase.getTravelJournalDatabase(this));
+        mNavigationView.getMenu().getItem(0).setChecked(true);
+        createDynamicFragment(new HomeFragment());
     }
 
     private void initFirebaseStorage() {
@@ -314,6 +320,8 @@ public class MainActivity extends AppCompatActivity
                                 mTrips.document(trip.getTripId()).set(trip);
                                 Toast.makeText(MainActivity.this, "Trip added successfully!",
                                         Toast.LENGTH_SHORT).show();
+                                mNavigationView.getMenu().getItem(0).setChecked(true);
+                                createDynamicFragment(new HomeFragment());
                             }
                         });
                     }

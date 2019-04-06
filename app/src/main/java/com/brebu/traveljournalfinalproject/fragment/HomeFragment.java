@@ -44,8 +44,10 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
+import static com.brebu.traveljournalfinalproject.MainActivity.HANDLER;
 import static com.brebu.traveljournalfinalproject.room.TravelJournalDatabase.getTravelJournalDatabase;
 import static com.brebu.traveljournalfinalproject.utils.BitmapProcess.bitmapToData;
 
@@ -75,7 +77,6 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
         View view = inflater.inflate(R.layout.content_navigation_drawer, container, false);
         initFirebase();
         initView(view);
-        //new LoadItemAsync().execute();
         return view;
     }
 
@@ -127,6 +128,18 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
         fragmentTransaction.addToBackStack("home").commit();
     }
 
+    private void editLocalTrip(final Trip trip){
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteByTripId(trip.getTripId());
+                TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().insertTrip(trip);
+                DatabaseInitializer.populateAsync(TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext));
+                mAdapter.startListening();
+            }
+        });
+    }
+
     @Override
     public void onTripSelected(DocumentSnapshot trip) {
 
@@ -134,8 +147,21 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
         Bundle bundle = new Bundle();
         bundle.putString(TRIP_NAME, trip.getString(TRIP_NAME));
         bundle.putString(TRIP_DESTINATION, trip.getString(TRIP_DESTINATION));
-        bundle.putInt(TRIP_PRICE, trip.getDouble(TRIP_PRICE).intValue());
-        bundle.putFloat(TRIP_RATING, trip.getDouble(TRIP_RATING).floatValue());
+
+        Double price = trip.getDouble(TRIP_PRICE);
+        int convertedPrice = 0;
+        if (price != null) {
+            convertedPrice = price.intValue();
+        }
+        bundle.putInt(TRIP_PRICE, convertedPrice);
+
+        Double rating = trip.getDouble(TRIP_RATING);
+        float convertedRating = 0.0f;
+        if (rating != null) {
+            convertedRating = rating.floatValue();
+        }
+        bundle.putFloat(TRIP_RATING, convertedRating);
+
         bundle.putString(START_DATE,
                 DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getDate(START_DATE)));
         bundle.putString(END_DATE,
@@ -158,38 +184,60 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
     public void onIconPressed(final DocumentSnapshot trip, ImageButton imageButton) {
 
         final String tripId = trip.getId();
-        final Trip tripWithId = trip.toObject(Trip.class);
-        if (tripWithId != null) {
-            tripWithId.setUserId(mMail);
+        final Trip currentTrip = trip.toObject(Trip.class);
+
+        if (currentTrip != null) {
+            currentTrip.setUserId(mMail);
         }
 
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
 
+                List<Trip> databaseTripsList =
+                        getTravelJournalDatabase(mFragmentContext).tripsDao().getAllTrips(mMail);
+
                 boolean contain = false;
 
-                for (Trip newTrip : getTravelJournalDatabase(mFragmentContext).tripsDao().getAllTrips()) {
-                    if (newTrip.getTripId().equals(tripWithId.getTripId())) {
+                for (Trip t : databaseTripsList) {
+                    if (currentTrip != null && t.getTripId().equals(currentTrip.getTripId())) {
                         contain = true;
                     }
                 }
 
                 if (!contain) {
-
                     mTrips.document(tripId).update("tripFavourite", true);
 
-                    DatabaseInitializer.addTrip(getTravelJournalDatabase(mFragmentContext), tripWithId);
+                    DatabaseInitializer.addTrip(getTravelJournalDatabase(mFragmentContext),
+                            currentTrip);
                     DatabaseInitializer.populateAsync(TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext));
+
+                    HANDLER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mFragmentContext, "Trip added to favourites!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
 
                 } else {
                     mTrips.document(tripId).update("tripFavourite", false);
 
-                    getTravelJournalDatabase(mFragmentContext).tripsDao().deleteTrip(tripWithId);
+                    getTravelJournalDatabase(mFragmentContext).tripsDao().deleteTrip(currentTrip);
                     DatabaseInitializer.populateAsync(TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext));
+
+                    HANDLER.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Toast.makeText(mFragmentContext, "Trip removed from favourites!",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
             }
         });
+
+
     }
 
     @Override
@@ -209,8 +257,17 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
                 StorageReference imgStorageRef =
                         storageRef.child(mMail).child(tripId + ".jpg");
                 imgStorageRef.delete();
-                Toast.makeText(mFragmentContext, "The item was removed",
+                Toast.makeText(mFragmentContext, "The trip was removed",
                         Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteByTripId(tripId);
+                DatabaseInitializer.populateAsync(TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext));
+                mAdapter.startListening();
             }
         });
     }
@@ -287,6 +344,7 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
                 String tripEnd = data.getStringExtra(END_DATE);
                 String tripPrice = data.getStringExtra(TRIP_PRICE);
                 String tripRating = data.getStringExtra(TRIP_RATING);
+                String tripFirestorePath = data.getStringExtra(FIRESTORE_PATH);
                 final String tripPhotoPath = data.getStringExtra(PHOTO_PATH);
                 File image = new File(tripPhotoPath);
                 Uri tempUri = Uri.fromFile(image);
@@ -316,6 +374,12 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
                         TRIP_RATING, convertedRating
                 );
 
+                final Trip editedTrip = new Trip(tripName, tripDestination, tripType,
+                        convertedPrice, tempStartDate, tempEndDate, convertedRating,
+                        tripPhotoPath, tripFirestorePath, false);
+                editedTrip.setUserId(mMail);
+                editedTrip.setTripId(tripIdFromFirestore);
+
                 if (AddOrModifyTrip.mPictureChanged) {
 
                     Toast.makeText(mFragmentContext, "Picture changed", Toast.LENGTH_LONG).show();
@@ -338,11 +402,14 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
                                             PHOTO_PATH, tripPhotoPath,
                                             FIRESTORE_PATH, uri.toString()
                                     );
+                                    editedTrip.setTripImageFirestore(uri.toString());
+                                    editLocalTrip(editedTrip);
                                 }
                             });
                         }
                     });
                 }
+                editLocalTrip(editedTrip);
             }
         }
     }

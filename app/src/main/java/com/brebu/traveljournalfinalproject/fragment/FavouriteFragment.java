@@ -115,7 +115,7 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
 
     @Override
     public void onTripLongPressed(Trip trip) {
-
+        Toast.makeText(mFragmentContext, "Please edit only from home", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -137,6 +137,7 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
                 TravelJournalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteTrip(trip);
             }
         });
+        mFirebaseFirestore.collection(mMail).document(trip.getTripId()).update("tripFavourite",false);
 
         mAdapter.notifyDataSetChanged();
     }
