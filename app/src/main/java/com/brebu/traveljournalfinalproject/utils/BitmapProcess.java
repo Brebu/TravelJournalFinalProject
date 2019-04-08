@@ -39,6 +39,17 @@ public class BitmapProcess {
         return byteArrayOutputStream.toByteArray();
     }
 
+    private static void closeSilently(@Nullable Closeable c) {
+        if (c == null) {
+            return;
+        }
+        try {
+            c.close();
+        } catch (Throwable t) {
+            t.getStackTrace();
+        }
+    }
+
     private static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
         Matrix matrix = new Matrix();
         switch (orientation) {
@@ -94,17 +105,6 @@ public class BitmapProcess {
             } finally {
                 closeSilently(outputStream);
             }
-        }
-    }
-
-    private static void closeSilently(@Nullable Closeable c) {
-        if (c == null) {
-            return;
-        }
-        try {
-            c.close();
-        } catch (Throwable t) {
-            t.getStackTrace();
         }
     }
 }

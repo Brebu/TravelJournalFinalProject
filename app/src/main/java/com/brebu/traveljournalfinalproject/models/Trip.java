@@ -20,35 +20,34 @@ import java.util.UUID;
         parentColumns = "id",
         childColumns = "user_id",
         onDelete = ForeignKey.CASCADE))
-
 public class Trip {
+
+    private String tripDestination;
+
+    @TypeConverters(DateConverter.class)
+    private Date tripEndDate;
+
+    private boolean tripFavourite;
 
     @PrimaryKey
     @NonNull
     private String tripId;
 
-    private String tripName;
-
-    private String tripDestination;
-
-    private String tripType;
-
-    private int tripPrice;
-
-    @TypeConverters(DateConverter.class)
-    private Date tripStartDate;
-
-    @TypeConverters(DateConverter.class)
-    private Date tripEndDate;
-
-    private float tripRating;
+    private String tripImageFirestore;
 
     @Ignore
     private String tripImagePath;
 
-    private String tripImageFirestore;
+    private String tripName;
 
-    private boolean tripFavourite;
+    private int tripPrice;
+
+    private float tripRating;
+
+    @TypeConverters(DateConverter.class)
+    private Date tripStartDate;
+
+    private String tripType;
 
     @ColumnInfo(name = "user_id")
     private String userId;
@@ -74,48 +73,12 @@ public class Trip {
     public Trip() {
     }
 
-    public String getTripId() {
-        return tripId;
-    }
-
-    public String getTripName() {
-        return tripName;
-    }
-
-    public void setTripName(String tripName) {
-        this.tripName = tripName;
-    }
-
     public String getTripDestination() {
         return tripDestination;
     }
 
     public void setTripDestination(String tripDestination) {
         this.tripDestination = tripDestination;
-    }
-
-    public String getTripType() {
-        return tripType;
-    }
-
-    public void setTripType(String tripType) {
-        this.tripType = tripType;
-    }
-
-    public int getTripPrice() {
-        return tripPrice;
-    }
-
-    public void setTripPrice(int tripPrice) {
-        this.tripPrice = tripPrice;
-    }
-
-    public Date getTripStartDate() {
-        return tripStartDate;
-    }
-
-    public void setTripStartDate(Date tripStartDate) {
-        this.tripStartDate = tripStartDate;
     }
 
     public Date getTripEndDate() {
@@ -126,20 +89,12 @@ public class Trip {
         this.tripEndDate = tripEndDate;
     }
 
-    public float getTripRating() {
-        return tripRating;
+    public String getTripId() {
+        return tripId;
     }
 
-    public void setTripRating(float tripRating) {
-        this.tripRating = tripRating;
-    }
-
-    public String getTripImagePath() {
-        return tripImagePath;
-    }
-
-    public void setTripImagePath(String tripImagePath) {
-        this.tripImagePath = tripImagePath;
+    public void setTripId(String tripId) {
+        this.tripId = tripId;
     }
 
     public String getTripImageFirestore() {
@@ -150,12 +105,52 @@ public class Trip {
         this.tripImageFirestore = tripImageFirestore;
     }
 
-    public boolean isTripFavourite() {
-        return tripFavourite;
+    public String getTripImagePath() {
+        return tripImagePath;
     }
 
-    public void setTripFavourite(boolean tripFavourite) {
-        this.tripFavourite = tripFavourite;
+    public void setTripImagePath(String tripImagePath) {
+        this.tripImagePath = tripImagePath;
+    }
+
+    public String getTripName() {
+        return tripName;
+    }
+
+    public void setTripName(String tripName) {
+        this.tripName = tripName;
+    }
+
+    public int getTripPrice() {
+        return tripPrice;
+    }
+
+    public void setTripPrice(int tripPrice) {
+        this.tripPrice = tripPrice;
+    }
+
+    public float getTripRating() {
+        return tripRating;
+    }
+
+    public void setTripRating(float tripRating) {
+        this.tripRating = tripRating;
+    }
+
+    public Date getTripStartDate() {
+        return tripStartDate;
+    }
+
+    public void setTripStartDate(Date tripStartDate) {
+        this.tripStartDate = tripStartDate;
+    }
+
+    public String getTripType() {
+        return tripType;
+    }
+
+    public void setTripType(String tripType) {
+        this.tripType = tripType;
     }
 
     public String getUserId() {
@@ -166,7 +161,11 @@ public class Trip {
         this.userId = userId;
     }
 
-    public void setTripId(String tripId) {
-        this.tripId = tripId;
+    public boolean isTripFavourite() {
+        return tripFavourite;
+    }
+
+    public void setTripFavourite(boolean tripFavourite) {
+        this.tripFavourite = tripFavourite;
     }
 }

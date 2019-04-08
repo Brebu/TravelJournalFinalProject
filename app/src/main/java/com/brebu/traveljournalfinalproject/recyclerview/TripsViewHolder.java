@@ -11,14 +11,14 @@ import com.brebu.traveljournalfinalproject.R;
 
 public class TripsViewHolder extends RecyclerView.ViewHolder {
 
-    public ImageView imageViewTrip;
-    public ImageButton imageButtonTrip;
-    public ImageButton imageButtonDelete;
-    public TextView textViewTitleTrip;
-    public TextView textViewDestinationTrip;
-    public TextView textViewStartDate;
-    public TextView textViewEndDate;
-    public View mItemView;
+    private ImageButton imageButtonDelete;
+    private ImageButton imageButtonTrip;
+    private ImageView imageViewTrip;
+    private View mItemView;
+    private TextView textViewDestinationTrip;
+    private TextView textViewEndDate;
+    private TextView textViewStartDate;
+    private TextView textViewTitleTrip;
 
     public TripsViewHolder(@NonNull View itemView) {
         super(itemView);
@@ -31,5 +31,37 @@ public class TripsViewHolder extends RecyclerView.ViewHolder {
         textViewStartDate = itemView.findViewById(R.id.textView_tripStart);
         textViewEndDate = itemView.findViewById(R.id.textView_tripEnd);
         mItemView = itemView;
+    }
+
+    public ImageButton getImageButtonDelete() {
+        return imageButtonDelete;
+    }
+
+    public ImageButton getImageButtonTrip() {
+        return imageButtonTrip;
+    }
+
+    public ImageView getImageViewTrip() {
+        return imageViewTrip;
+    }
+
+    public View getItemView() {
+        return mItemView;
+    }
+
+    public TextView getTextViewDestinationTrip() {
+        return textViewDestinationTrip;
+    }
+
+    public TextView getTextViewEndDate() {
+        return textViewEndDate;
+    }
+
+    public TextView getTextViewStartDate() {
+        return textViewStartDate;
+    }
+
+    public TextView getTextViewTitleTrip() {
+        return textViewTitleTrip;
     }
 }

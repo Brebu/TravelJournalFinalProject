@@ -1,5 +1,6 @@
 package com.brebu.traveljournalfinalproject.recyclerview;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -13,7 +14,9 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
+import com.squareup.picasso.Picasso;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -22,12 +25,95 @@ import java.util.Locale;
 public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
 
     private Context mContext;
-    private OnTripSelectedListener mListener;
+    private OnTripSelectedListener<DocumentSnapshot> mListener;
 
-    public TripsAdapter(Query query, OnTripSelectedListener listener, Context context) {
-        super(query);
-        mListener = listener;
-        mContext = context;
+    @SuppressLint("SetTextI18n")
+    @Override
+    public void onBindViewHolder(@NonNull final TripsViewHolder tripsViewHolder, @SuppressLint("RecyclerView") final int i) {
+
+        final Trip currentTrip = getSnapshot(i).toObject(Trip.class);
+
+        if (currentTrip != null) {
+            tripsViewHolder.getTextViewTitleTrip().setText(currentTrip.getTripName());
+
+            tripsViewHolder.getTextViewDestinationTrip().setText(currentTrip.getTripDestination());
+
+            //Set DateStart hint
+            Date startDate = currentTrip.getTripStartDate();
+            if (startDate != null) {
+                tripsViewHolder.getTextViewStartDate().setText("Start date: " + DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(startDate));
+            }
+
+            //Set DateEnd hint
+            Date endDate = currentTrip.getTripEndDate();
+            if (startDate != null) {
+                tripsViewHolder.getTextViewEndDate().setText("End date: " + DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(endDate));
+            }
+
+            if (currentTrip.isTripFavourite()) {
+                tripsViewHolder.getImageButtonTrip().setImageDrawable(mContext.getDrawable(R.drawable
+                        .ic_bookmark_full));
+            } else {
+                tripsViewHolder.getImageButtonTrip().setImageDrawable(mContext.getDrawable(R.drawable
+                        .ic_bookmark_border));
+            }
+
+            Picasso.get().load(currentTrip.getTripImageFirestore()).noPlaceholder().resize(6000,6000).centerCrop().onlyScaleDown()
+                    .into(tripsViewHolder.getImageViewTrip());
+
+
+            // Click listener
+            tripsViewHolder.getItemView().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mListener != null) {
+                        mListener.onTripSelected(getSnapshot(i));
+                    }
+                }
+            });
+            tripsViewHolder.getItemView().setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View view) {
+                    if (mListener != null) {
+                        mListener.onTripLongPressed(getSnapshot(i));
+                    }
+                    return true;
+                }
+            });
+
+            tripsViewHolder.getImageButtonTrip().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (mListener != null) {
+                        mListener.onIconPressed(getSnapshot(i), tripsViewHolder.getImageButtonTrip());
+                    }
+                }
+            });
+
+
+            tripsViewHolder.getImageButtonDelete().setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        mListener.onDeletePressed(getSnapshot(i), tripsViewHolder.getImageButtonDelete());
+                    }
+                }
+            });
+
+            tripsViewHolder.getImageButtonDelete().setOnLongClickListener(new View.OnLongClickListener() {
+                @Override
+                public boolean onLongClick(View v) {
+                    if (mListener != null) {
+                        mListener.onDeleteLongPressed(getSnapshot(i),
+                                tripsViewHolder.getImageButtonDelete());
+                    }
+                    return true;
+                }
+            });
+
+        }
+
+
     }
 
     @NonNull
@@ -38,100 +124,10 @@ public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
         return new TripsViewHolder(itemView);
     }
 
-    @Override
-    public void onBindViewHolder(@NonNull final TripsViewHolder tripsViewHolder, final int i) {
-
-        final Trip currentTrip = getSnapshot(i).toObject(Trip.class);
-
-        tripsViewHolder.textViewTitleTrip.setText(currentTrip.getTripName());
-        tripsViewHolder.textViewDestinationTrip.setText(currentTrip.getTripDestination());
-
-        //Set DateStart hint
-        Date startDate = currentTrip.getTripStartDate();
-        if (startDate != null) {
-            tripsViewHolder.textViewStartDate.setText("Start date: " + DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(startDate));
-        }
-
-        //Set DateEnd hint
-        Date endDate = currentTrip.getTripEndDate();
-        if (startDate != null) {
-            tripsViewHolder.textViewEndDate.setText("End date: " + DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(endDate));
-        }
-
-        if (currentTrip.isTripFavourite()) {
-            tripsViewHolder.imageButtonTrip.setImageDrawable(mContext.getDrawable(R.drawable
-                    .ic_bookmark_full));
-        } else {
-            tripsViewHolder.imageButtonTrip.setImageDrawable(mContext.getDrawable(R.drawable
-                    .ic_bookmark_border));
-        }
-
-        RequestOptions options = new RequestOptions()
-                .centerCrop()
-                .placeholder(R.drawable.no_picture)
-                .error(R.drawable.no_picture)
-                .diskCacheStrategy(DiskCacheStrategy.ALL)
-                .priority(Priority.HIGH)
-                .dontAnimate()
-                .dontTransform();
-
-        Glide.with(mContext)
-                .load(currentTrip.getTripImageFirestore())
-                .apply(options)
-                .into(tripsViewHolder.imageViewTrip);
-
-
-        // Click listener
-        tripsViewHolder.mItemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mListener != null) {
-                    mListener.onTripSelected(getSnapshot(i));
-                }
-            }
-        });
-        tripsViewHolder.mItemView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View view) {
-                if (mListener != null) {
-                    mListener.onTripLongPressed(getSnapshot(i));
-                }
-                return true;
-            }
-        });
-
-        tripsViewHolder.imageButtonTrip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (mListener != null) {
-                    mListener.onIconPressed(getSnapshot(i), tripsViewHolder.imageButtonTrip);
-                }
-            }
-        });
-
-
-        tripsViewHolder.imageButtonDelete.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (mListener != null) {
-                    mListener.onDeletePressed(getSnapshot(i), tripsViewHolder.imageButtonDelete);
-                }
-            }
-        });
-
-        tripsViewHolder.imageButtonDelete.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                if (mListener != null) {
-                    mListener.onDeleteLongPressed(getSnapshot(i),
-                            tripsViewHolder.imageButtonDelete);
-                }
-                return true;
-            }
-        });
-
-
+    public TripsAdapter(Query query, OnTripSelectedListener<DocumentSnapshot> listener, Context context) {
+        super(query);
+        mListener = listener;
+        mContext = context;
     }
-
 
 }

@@ -8,8 +8,6 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-
-
     <FrameLayout
         android:id="@+id/frame_layout_drawer_fragment"
         android:layout_width="match_parent"
@@ -19,12 +17,16 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" >
 
-        <android.support.v7.widget.RecyclerView
-            android:id="@+id/recycler_view_x"
+        <TextView
+            android:id="@+id/TextView_Welcome"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:clipToPadding="false"
-            android:paddingBottom="24dp"/>
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-thin"
+            android:gravity="center_vertical|center_horizontal"
+            android:text="Welcome"
+            android:textAlignment="center"
+            android:textSize="64sp" />
 
     </FrameLayout>
 

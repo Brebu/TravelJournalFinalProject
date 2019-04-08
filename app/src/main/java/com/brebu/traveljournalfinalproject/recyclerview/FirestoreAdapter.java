@@ -18,50 +18,14 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         implements EventListener<QuerySnapshot> {
 
     private static final String TAG = "Firestore Adapter";
-
+    private DocumentSnapshot mDocumentSnapshot;
     private Query mQuery;
     private ListenerRegistration mRegistration;
     private ArrayList<DocumentSnapshot> mSnapshots = new ArrayList<>();
-    private DocumentSnapshot mDocumentSnapshot;
-
-    public FirestoreAdapter(Query query) {
-        mQuery = query;
-    }
-
-    public void startListening() {
-        if (mQuery != null && mRegistration == null) {
-            mRegistration = mQuery.addSnapshotListener(this);
-        }
-    }
-
-    public void stopListening() {
-        if (mRegistration != null) {
-            mRegistration.remove();
-            mRegistration = null;
-        }
-
-        mSnapshots.clear();
-        notifyDataSetChanged();
-    }
-
-    public void setQuery(Query query) {
-
-        stopListening();
-
-        mSnapshots.clear();
-        notifyDataSetChanged();
-
-        mQuery = query;
-        startListening();
-    }
 
     @Override
     public int getItemCount() {
         return mSnapshots.size();
-    }
-
-    protected DocumentSnapshot getSnapshot(int index) {
-        return mSnapshots.get(index);
     }
 
     @Override
@@ -97,6 +61,14 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         }
     }
 
+    FirestoreAdapter(Query query) {
+        mQuery = query;
+    }
+
+    DocumentSnapshot getSnapshot(int index) {
+        return mSnapshots.get(index);
+    }
+
     private void onDocumentAdded(DocumentChange change) {
 
         int newIndex = change.getNewIndex();
@@ -125,5 +97,32 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         int oldInt = change.getOldIndex();
         mSnapshots.remove(oldInt);
         notifyItemRemoved(oldInt);
+    }
+
+    public void setQuery(Query query) {
+
+        stopListening();
+
+        mSnapshots.clear();
+        notifyDataSetChanged();
+
+        mQuery = query;
+        startListening();
+    }
+
+    public void startListening() {
+        if (mQuery != null && mRegistration == null) {
+            mRegistration = mQuery.addSnapshotListener(this);
+        }
+    }
+
+    private void stopListening() {
+        if (mRegistration != null) {
+            mRegistration.remove();
+            mRegistration = null;
+        }
+
+        mSnapshots.clear();
+        notifyDataSetChanged();
     }
 }

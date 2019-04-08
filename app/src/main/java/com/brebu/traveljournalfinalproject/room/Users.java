@@ -2,7 +2,6 @@ package com.brebu.traveljournalfinalproject.room;
 
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
-import android.arch.persistence.room.Ignore;
 import android.arch.persistence.room.PrimaryKey;
 import android.support.annotation.NonNull;
 
@@ -14,19 +13,13 @@ public class Users {
     @ColumnInfo(name = "id")
     private String userId;
 
-    public Users(String userId) {
+    public Users(@NonNull String userId) {
         this.userId = userId;
     }
 
-    @Ignore
-    public Users() {
-    }
-
+    @NonNull
     public String getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
 }

@@ -1,5 +1,6 @@
-package com.brebu.traveljournalfinalproject.fragment;
+package com.brebu.traveljournalfinalproject.fragments;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -13,25 +14,21 @@ import android.widget.TextView;
 
 import com.brebu.traveljournalfinalproject.R;
 import com.brebu.traveljournalfinalproject.utils.Constants;
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.Priority;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
-import com.bumptech.glide.request.RequestOptions;
+import com.squareup.picasso.Picasso;
 
 
 public class ViewTripFragment extends Fragment implements Constants {
 
 
     private FragmentActivity mFragmentActivity;
-
-    private TextView mTextViewTripName;
+    private ImageView mImageViewTripFavourite;
+    private ImageView mImageViewTripImage;
+    private RatingBar mRatingBarTripRating;
     private TextView mTextViewTripDestination;
+    private TextView mTextViewTripEndDate;
+    private TextView mTextViewTripName;
     private TextView mTextViewTripPrice;
     private TextView mTextViewTripStartDate;
-    private TextView mTextViewTripEndDate;
-    private RatingBar mRatingBarTripRating;
-    private ImageView mImageViewTripImage;
-    private ImageView mImageViewTripFavourite;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -44,42 +41,27 @@ public class ViewTripFragment extends Fragment implements Constants {
         return view;
     }
 
+    @SuppressLint("SetTextI18n")
     private void inflateView() {
         Bundle bundle = this.getArguments();
         if (bundle != null) {
             mTextViewTripName.setText(bundle.getString(TRIP_NAME));
             mTextViewTripDestination.setText(bundle.getString(TRIP_DESTINATION));
-
-
-                mTextViewTripPrice.setText(" " + bundle.getInt(TRIP_PRICE) + " € ");
-
-
-            mTextViewTripStartDate.setText("Start date: "+bundle.getString(START_DATE));
-            mTextViewTripEndDate.setText("End date: "+bundle.getString(END_DATE));
+            mTextViewTripPrice.setText(" " + bundle.getInt(TRIP_PRICE) + " € ");
+            mTextViewTripStartDate.setText("Start date: " + bundle.getString(START_DATE));
+            mTextViewTripEndDate.setText("End date: " + bundle.getString(END_DATE));
 
             float convertedRating = bundle.getFloat(TRIP_RATING);
             mRatingBarTripRating.setRating(convertedRating);
 
-            String isFavourite = bundle.getString("tripFavourite");
-            if(Boolean.parseBoolean(isFavourite)){
+            String isFavourite = bundle.getString(TRIP_FAVOURITE);
+            if (Boolean.parseBoolean(isFavourite)) {
                 mImageViewTripFavourite.setImageResource(R.drawable.ic_bookmark_full);
-            }else{
+            } else {
                 mImageViewTripFavourite.setImageResource(R.drawable.ic_bookmark_border);
             }
 
-
-            RequestOptions options = new RequestOptions()
-                    .centerCrop()
-                    .placeholder(R.drawable.no_picture)
-                    .error(R.drawable.no_picture)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
-                    .priority(Priority.HIGH)
-                    .dontAnimate()
-                    .dontTransform();
-
-            Glide.with(mFragmentActivity)
-                    .load(bundle.getString(FIRESTORE_PATH))
-                    .apply(options)
+            Picasso.get().load(bundle.getString(FIRESTORE_PATH)).noPlaceholder().resize(6000,6000).centerCrop().onlyScaleDown()
                     .into(mImageViewTripImage);
 
         }
