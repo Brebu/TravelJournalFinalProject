@@ -1,13 +1,11 @@
 package com.brebu.traveljournalfinalproject;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.PowerManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -20,6 +18,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +28,7 @@ import android.widget.Toast;
 
 import com.brebu.traveljournalfinalproject.fragments.FavouriteFragment;
 import com.brebu.traveljournalfinalproject.fragments.HomeFragment;
+import com.brebu.traveljournalfinalproject.fragments.TabbedFragment;
 import com.brebu.traveljournalfinalproject.fragments.WelcomeFragment;
 import com.brebu.traveljournalfinalproject.models.Trip;
 import com.brebu.traveljournalfinalproject.repository.FirebaseRepository;
@@ -39,6 +39,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
+import com.crashlytics.android.Crashlytics;
+import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -52,7 +54,10 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+
+import io.fabric.sdk.android.Fabric;
 
 import static com.brebu.traveljournalfinalproject.utils.BitmapProcess.bitmapToData;
 
@@ -71,9 +76,20 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private TextView mTextViewProfileName;
     private TextView mTextViewWelcome;
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 999) {
+            if (resultCode == RESULT_OK) {
+                String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
+                for (String id : ids) {
+                    Log.d(TAG, "id of sent invitation: " + id);
+                }
+            } else {
+                Toast.makeText(this,"Failed to send invitation",Toast.LENGTH_LONG).show();
+            }
+        }
         if (requestCode == ADD_NEW_TRIP) {
             if (resultCode == Activity.RESULT_OK) {
 
@@ -136,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                                         if (documentSnapshots.size() == 1) {
                                             setTitle("Home");
                                             mTextViewWelcome.setVisibility(View.GONE);
-                                            createDynamicFragment(new HomeFragment());
+                                            createDynamicFragment(new TabbedFragment());
                                         }
                                     }
                                 });
@@ -153,10 +169,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
-        } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-            getSupportFragmentManager().popBackStack();
-        } else {
+        }
+        int count = getSupportFragmentManager().getBackStackEntryCount();
+
+        if (count == 0) {
             super.onBackPressed();
+        } else {
+            getSupportFragmentManager().popBackStack();
         }
     }
 
@@ -168,6 +187,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Fabric.with(this, new Crashlytics());
         initView();
         initFirebase();
         initGoogleClient();
@@ -188,53 +208,53 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            FirebaseRepository.getTrips().get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                @Override
-                public void onSuccess(QuerySnapshot documentSnapshots) {
-                    if (documentSnapshots.isEmpty()) {
-                        mTextViewWelcome.setText("No trip!");
-                        mTextViewWelcome.setVisibility(View.VISIBLE);
-                    } else {
-                        mTextViewWelcome.setVisibility(View.GONE);
-                        createDynamicFragment(new HomeFragment());
-                    }
-                }
-            });
+            getSupportFragmentManager().popBackStack();
+            createDynamicFragment(new TabbedFragment());
+        } else if (id == R.id.nav_favourites) {
+            getSupportFragmentManager().popBackStack();
+            createDynamicFragment(new FavouriteFragment());
 
-            this.setTitle("Home");
+        } else if (id == R.id.nav_about_us) {
+            getSupportFragmentManager().popBackStack();
+        } else if (id == R.id.nav_contact) {
 
-        } else if (id == R.id.nav_gallery) {
-
-            AsyncTask.execute(new Runnable() {
-                @Override
-                public void run() {
-                    if (LocalDatabase.getTravelJournalDatabase(getApplicationContext()).tripsDao().getAllTrips(FirebaseRepository.getMail()).isEmpty()) {
-                        mTextViewWelcome.setText("No favorite trips :(");
-                        mTextViewWelcome.setVisibility(View.VISIBLE);
-                        createDynamicFragment(new FavouriteFragment());
-                    } else {
-                        mTextViewWelcome.setVisibility(View.GONE);
-                        createDynamicFragment(new FavouriteFragment());
-                    }
-                }
-            });
-            mTextViewWelcome.setVisibility(View.VISIBLE);
-
-            this.setTitle("Favourites");
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
+            getSupportFragmentManager().popBackStack();
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("message/rfc822");
+            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"brebu.ciprian@gmail.com"});
+            i.putExtra(Intent.EXTRA_SUBJECT, "Message from: " + FirebaseRepository.getUsername());
+            try {
+                startActivity(Intent.createChooser(i, "Contact this developer"));
+            } catch (android.content.ActivityNotFoundException ex) {
+                Toast.makeText(this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+            }
 
         } else if (id == R.id.nav_share) {
+            getSupportFragmentManager().popBackStack();
+
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, "Here is a good project! \n https://traveljournalfinalproject.page.link/install");
+            sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Let's install!");
+            sendIntent.setType("text/plain");
+            startActivity(Intent.createChooser(sendIntent,
+                    "Send to.."));
 
         } else if (id == R.id.nav_send) {
+
+                Intent intent = new AppInviteInvitation.IntentBuilder("Try out my cool app!")
+                        .setMessage("Hey, this app is really cool. I thought you might like it!")
+                        .setDeepLink(Uri.parse("https://traveljournalfinalproject.page.link/install"))
+                        .setCallToActionText("Let's do this!")
+                        .build();
+                startActivityForResult(intent, 999);
 
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
         return true;
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -248,13 +268,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             default:
                 return super.onOptionsItemSelected(item);
         }
+
     }
 
     public void createDynamicFragment(Fragment fragment) {
         FragmentManager fragmentManager = this.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, fragment);
-        fragmentTransaction.addToBackStack("MainActivity").commit();
+        fragmentTransaction.commit();
     }
 
     private void initFirebase() {
@@ -263,9 +284,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             startActivity(new Intent(this, SignInActivity.class));
             finish();
         } else {
-                setTitle("Welcome");
-                createDynamicFragment(new WelcomeFragment());
-                mTextViewWelcome.setVisibility(View.GONE);
+            setTitle("Welcome");
+            createDynamicFragment(new WelcomeFragment());
+            mTextViewWelcome.setVisibility(View.GONE);
 
             if (FirebaseRepository.getUsername() != null && !FirebaseRepository.getUsername().isEmpty()) {
                 mTextViewProfileName.setText(FirebaseRepository.getUsername());
@@ -303,6 +324,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private void initView() {
 
+
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -335,4 +357,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mTextViewWelcome = findViewById(R.id.TextView_Welcome);
         mTextViewWelcome.setVisibility(View.GONE);
     }
+
 }

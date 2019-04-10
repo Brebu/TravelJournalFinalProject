@@ -65,7 +65,7 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         mQuery = query;
     }
 
-    DocumentSnapshot getSnapshot(int index) {
+    public DocumentSnapshot getSnapshot(int index) {
         return mSnapshots.get(index);
     }
 

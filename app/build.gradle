@@ -33,6 +33,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:18.2.0'
     implementation 'com.google.android.gms:play-services-auth:16.0.1'
     implementation 'com.google.firebase:firebase-storage:16.1.0'
+    implementation 'com.google.firebase:firebase-invites:16.1.1'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.9'
     // room persistence library
     implementation 'android.arch.persistence.room:runtime:' + rootProject.archRoomVersion
     annotationProcessor 'android.arch.persistence.room:compiler:' + rootProject.archRoomVersion
@@ -42,3 +44,4 @@ dependencies {
     implementation 'com.squareup.picasso:picasso:2.71828'
 }
 apply plugin: 'com.google.gms.google-services'
+apply plugin: 'io.fabric'

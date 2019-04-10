@@ -1,5 +1,11 @@
 package com.brebu.traveljournalfinalproject.fragments;
 
+import android.content.DialogInterface;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -7,13 +13,15 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.brebu.traveljournalfinalproject.R;
@@ -31,7 +39,8 @@ import java.util.Locale;
 public class FavouriteFragment extends Fragment implements OnTripSelectedListener<Trip>, Constants {
 
     private FavouriteTripsAdapter mAdapter;
-    private FragmentActivity mFragmentContext;
+    private FragmentActivity mFragmentActivity;
+    private RecyclerView mRecyclerViewItems;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -43,38 +52,13 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
     }
 
     @Override
-    public void onDeleteLongPressed(final Trip trip, ImageButton imageButton) {
-
-        DatabaseInitializer.getTripList().remove(trip);
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                LocalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteTrip(trip);
-            }
-        });
-        FirebaseRepository.getTrips().document(trip.getTripId()).update(TRIP_FAVOURITE,false);
-        mAdapter.notifyDataSetChanged();
-        if (DatabaseInitializer.getTripList().isEmpty()) {
-            TextView mTextViewWelcome;
-            mTextViewWelcome = mFragmentContext.findViewById(R.id.TextView_Welcome);
-            mTextViewWelcome.setText("No favourite trips :(");
-            mTextViewWelcome.setVisibility(View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void onDeletePressed(Trip trip, ImageButton imageButton) {
-        Toast.makeText(mFragmentContext, "For delete press long", Toast.LENGTH_LONG).show();
-    }
-
-    @Override
     public void onIconPressed(Trip trip, ImageButton imageButton) {
-        Toast.makeText(mFragmentContext, "Please make favourite from home", Toast.LENGTH_LONG).show();
+        Toast.makeText(mFragmentActivity, "Please make favourite from home", Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onTripLongPressed(Trip trip) {
-        Toast.makeText(mFragmentContext, "Please edit only from home", Toast.LENGTH_LONG).show();
+        Toast.makeText(mFragmentActivity, "Please edit only from home", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -92,23 +76,135 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
         bundle.putString(FIRESTORE_PATH, trip.getTripImageFirestore());
         bundle.putString(TRIP_FAVOURITE, String.valueOf(true));
         displayTrip.setArguments(bundle);
-        createDynamicFragment(displayTrip);
+        FragmentManager fragmentManager = mFragmentActivity.getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, displayTrip);
+        fragmentTransaction.addToBackStack("View").commit();
     }
 
     private void createDynamicFragment(Fragment fragment) {
-        FragmentManager fragmentManager = mFragmentContext.getSupportFragmentManager();
+        FragmentManager fragmentManager = mFragmentActivity.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, fragment);
-        fragmentTransaction.addToBackStack("home").commit();
+        fragmentTransaction.commit();
     }
 
     private void initView(View view) {
 
-        mFragmentContext = getActivity();
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                if (LocalDatabase.getTravelJournalDatabase(mFragmentActivity).tripsDao().getAllTrips(FirebaseRepository.getMail()).isEmpty()) {
+                    createDynamicFragment(new EmptyFragment());
+                }
+            }
+        });
 
-        RecyclerView recyclerViewTrips = view.findViewById(R.id.recycler_view_x);
-        recyclerViewTrips.setLayoutManager(new LinearLayoutManager(mFragmentContext));
-        mAdapter = new FavouriteTripsAdapter(DatabaseInitializer.getTripList(), mFragmentContext, this);
-        recyclerViewTrips.setAdapter(mAdapter);
+        mFragmentActivity = getActivity();
+        if (mFragmentActivity != null) {
+            mFragmentActivity.setTitle("Favourites");
+        }
+        mRecyclerViewItems = view.findViewById(R.id.recycler_view_x);
+        mRecyclerViewItems.setLayoutManager(new LinearLayoutManager(mFragmentActivity));
+        mAdapter = new FavouriteTripsAdapter(DatabaseInitializer.getTripList(), mFragmentActivity, this);
+        setItemHelper(mAdapter);
+        mRecyclerViewItems.setAdapter(mAdapter);
+    }
+
+    private void setItemHelper(final FavouriteTripsAdapter adapter) {
+
+        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+            Drawable background;
+            boolean initiated;
+            Drawable xMark;
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
+
+                View itemView = viewHolder.itemView;
+
+                if (viewHolder.getAdapterPosition() == -1) {
+                    // not interested in those
+                    return;
+                }
+
+                if (!initiated) {
+                    init();
+                }
+
+                background.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                background.draw(c);
+
+                int xMarkTop = itemView.getTop() + (itemView.getHeight() - xMark.getIntrinsicHeight()) / 2;
+                int xMarkBottom = xMarkTop + xMark.getIntrinsicHeight();
+                int xMarkLeft = itemView.getRight() - (itemView.getWidth() - xMark.getIntrinsicWidth()) / 6;
+                int xMarkRight = xMarkLeft + xMark.getIntrinsicWidth();
+
+
+                xMark.setBounds(xMarkLeft, xMarkTop, xMarkRight, xMarkBottom);
+                xMark.draw(c);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder viewHolder1) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(mFragmentActivity);
+                builder.setTitle("Attention!");
+                builder.setMessage("Are you sure to delete?");
+
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        int position = viewHolder.getAdapterPosition();
+                        final Trip currentTrip = DatabaseInitializer.getTripList().get(position);
+
+                        DatabaseInitializer.getTripList().remove(currentTrip);
+                        AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                LocalDatabase.getTravelJournalDatabase(mFragmentActivity).tripsDao().deleteTrip(currentTrip);
+                            }
+                        });
+                        FirebaseRepository.getTrips().document(currentTrip.getTripId()).update(TRIP_FAVOURITE, false);
+                        mAdapter.notifyDataSetChanged();
+                        if (DatabaseInitializer.getTripList().isEmpty()) {
+                            createDynamicFragment(new EmptyFragment());
+                        }
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+            }
+
+            private void init() {
+                background = new ColorDrawable(Color.WHITE);
+                xMark = ContextCompat.getDrawable(mFragmentActivity, R.drawable.ic_delete_black_24dp);
+                if (xMark != null) {
+                    xMark.setColorFilter(mFragmentActivity.getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+                }
+                initiated = true;
+            }
+        });
+        helper.attachToRecyclerView(mRecyclerViewItems);
     }
 }

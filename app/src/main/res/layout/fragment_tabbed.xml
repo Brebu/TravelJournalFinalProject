@@ -1,0 +1,77 @@
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context="fragments.TabbedFragment">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.design.widget.TabLayout
+            android:id="@+id/tabs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimaryDark"
+            android:elevation="4dp"
+            app:tabBackground="@color/colorPrimaryDark"
+            app:tabGravity="center"
+            app:tabIndicatorColor="@color/colorAccent"
+            app:tabIndicatorFullWidth="true"
+            app:tabIndicatorGravity="bottom"
+            app:tabIndicatorHeight="3dp"
+            app:tabInlineLabel="true"
+            app:tabMode="scrollable">
+
+            <android.support.design.widget.TabItem
+                android:id="@+id/tabItem"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date ▲" />
+
+            <android.support.design.widget.TabItem
+                android:id="@+id/tabItem2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date ▼" />
+
+            <android.support.design.widget.TabItem
+                android:id="@+id/tabItem3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Price ▲" />
+
+            <android.support.design.widget.TabItem
+                android:id="@+id/tabItem4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Price ▼" />
+
+            <android.support.design.widget.TabItem
+                android:id="@+id/tabItem5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rating ▲" />
+
+            <android.support.design.widget.TabItem
+                android:id="@+id/tabItem6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Rating ▼" />
+
+
+        </android.support.design.widget.TabLayout>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <com.brebu.traveljournalfinalproject.utils.NonSwipeAbleViewPager
+        android:id="@+id/viewpager"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        android:background="@android:color/white"/>
+
+</android.support.design.widget.CoordinatorLayout>

@@ -23,7 +23,7 @@ public interface TripDao {
     void deleteTrip(Trip trip);
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("Select * from trip where user_id=:mMail")
+    @Query("Select * from trip where user_id=:mMail order by tripRating Desc")
     List<Trip> getAllTrips(String mMail);
 
     @Insert

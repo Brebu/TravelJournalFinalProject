@@ -37,17 +37,18 @@ public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
             tripsViewHolder.getTextViewTitleTrip().setText(currentTrip.getTripName());
 
             tripsViewHolder.getTextViewDestinationTrip().setText(currentTrip.getTripDestination());
+            tripsViewHolder.getRatingBarTrip().setRating(currentTrip.getTripRating());
 
-            //Set DateStart hint
-            Date startDate = currentTrip.getTripStartDate();
-            if (startDate != null) {
-                tripsViewHolder.getTextViewStartDate().setText("Start date: " + DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(startDate));
+            //Set Price
+            int tripPrice = currentTrip.getTripPrice();
+            if (tripPrice != 0) {
+                tripsViewHolder.getTextViewStartDate().setText("Trip price: " + tripPrice + " €");
             }
 
-            //Set DateEnd hint
-            Date endDate = currentTrip.getTripEndDate();
-            if (startDate != null) {
-                tripsViewHolder.getTextViewEndDate().setText("End date: " + DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(endDate));
+            //Set Rating
+            float tripRating = currentTrip.getTripRating();
+            if (tripRating != 0.0f) {
+                tripsViewHolder.getTextViewEndDate().setText("Trip rating: " + tripRating);
             }
 
             if (currentTrip.isTripFavourite()) {
@@ -58,7 +59,18 @@ public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
                         .ic_bookmark_border));
             }
 
-            Picasso.get().load(currentTrip.getTripImageFirestore()).noPlaceholder().resize(6000,6000).centerCrop().onlyScaleDown()
+//            Picasso.get().load(currentTrip.getTripImageFirestore()).noPlaceholder().resize(6000,6000).centerCrop().onlyScaleDown()
+//                    .into(tripsViewHolder.getImageViewTrip());
+
+            RequestOptions options = new RequestOptions()
+                    .placeholder(R.drawable.no_picture)
+                    .error(R.drawable.no_picture)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .priority(Priority.HIGH);
+
+            Glide.with(mContext)
+                    .load(currentTrip.getTripImageFirestore())
+                    .apply(options)
                     .into(tripsViewHolder.getImageViewTrip());
 
 
@@ -87,27 +99,6 @@ public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
                     if (mListener != null) {
                         mListener.onIconPressed(getSnapshot(i), tripsViewHolder.getImageButtonTrip());
                     }
-                }
-            });
-
-
-            tripsViewHolder.getImageButtonDelete().setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mListener != null) {
-                        mListener.onDeletePressed(getSnapshot(i), tripsViewHolder.getImageButtonDelete());
-                    }
-                }
-            });
-
-            tripsViewHolder.getImageButtonDelete().setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    if (mListener != null) {
-                        mListener.onDeleteLongPressed(getSnapshot(i),
-                                tripsViewHolder.getImageButtonDelete());
-                    }
-                    return true;
                 }
             });
 

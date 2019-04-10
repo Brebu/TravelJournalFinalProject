@@ -2,23 +2,34 @@ package com.brebu.traveljournalfinalproject.fragments;
 
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.brebu.traveljournalfinalproject.AddOrModifyTrip;
@@ -56,7 +67,8 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
     private static final String TAG = "HomeFragment";
 
     private FragmentActivity mFragmentContext;
-    private TextView mTextViewWelcome;
+    private RecyclerView mRecyclerViewItems;
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -170,53 +182,6 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
         return view;
     }
 
-    private void checkForTrips() {
-        FirebaseRepository.getTrips().get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-            @Override
-            public void onSuccess(QuerySnapshot documentSnapshots) {
-                if (documentSnapshots.isEmpty()) {
-                    mTextViewWelcome = mFragmentContext.findViewById(R.id.TextView_Welcome);
-                    mTextViewWelcome.setText("No trips! :(");
-                    mTextViewWelcome.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-    }
-
-    @Override
-    public void onDeleteLongPressed(DocumentSnapshot trip, ImageButton imageButton) {
-        final String tripId = trip.getId();
-        FirebaseRepository.getTrips().document(tripId).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
-            @Override
-            public void onSuccess(Void aVoid) {
-                StorageReference storageRef =
-                        FirebaseRepository.getFirebaseStorage().getReference();
-                StorageReference imgStorageRef =
-                        storageRef.child(FirebaseRepository.getMail()).child(tripId + ".jpg");
-                imgStorageRef.delete();
-                Toast.makeText(mFragmentContext, "The trip was removed",
-                        Toast.LENGTH_SHORT).show();
-            }
-        });
-
-        checkForTrips();
-
-        AsyncTask.execute(new Runnable() {
-            @Override
-            public void run() {
-                LocalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteByTripId(tripId);
-                DatabaseInitializer.populateAsync(LocalDatabase.getTravelJournalDatabase(mFragmentContext));
-            }
-        });
-    }
-
-    @Override
-    public void onDeletePressed(DocumentSnapshot trip, ImageButton imageButton) {
-
-        Toast.makeText(mFragmentContext, "For delete press long", Toast.LENGTH_LONG).show();
-
-    }
-
     @Override
     public void onIconPressed(final DocumentSnapshot trip, ImageButton imageButton) {
 
@@ -325,21 +290,36 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
         bundle.putString(FIRESTORE_PATH, trip.getString(FIRESTORE_PATH));
         bundle.putString(TRIP_FAVOURITE, String.valueOf(trip.getBoolean(TRIP_FAVOURITE)));
         displayTrip.setArguments(bundle);
-        createDynamicFragment(displayTrip);
+        //createDynamicFragment(displayTrip);
+        FragmentManager fragmentManager = mFragmentContext.getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, displayTrip);
+        fragmentTransaction.addToBackStack("View").commit();
+    }
+
+    private void checkForTrips() {
+        FirebaseRepository.getTrips().get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot documentSnapshots) {
+                if (documentSnapshots.isEmpty()) {
+                    createDynamicFragment(new EmptyFragment());
+                }
+            }
+        });
     }
 
     private void createDynamicFragment(Fragment fragment) {
         FragmentManager fragmentManager = mFragmentContext.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, fragment);
-        fragmentTransaction.addToBackStack("home").commit();
+        fragmentTransaction.commit();
     }
 
     private void editLocalTrip(final Trip trip) {
         AsyncTask.execute(new Runnable() {
             @Override
             public void run() {
-                trip.setTripFavourite(true);
+                trip.setTripFavourite(false);
                 LocalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().updateTrip(trip);
                 DatabaseInitializer.populateAsync(LocalDatabase.getTravelJournalDatabase(mFragmentContext));
             }
@@ -349,15 +329,146 @@ public class HomeFragment extends Fragment implements OnTripSelectedListener<Doc
     private void initView(View view) {
 
         mFragmentContext = getActivity();
+        Query query = null;
 
-        Query query = FirebaseRepository.getFirebaseFirestore().collection(FirebaseRepository.getMail())
-                .orderBy("tripStartDate", Query.Direction.DESCENDING)
-                .limit(DISPLAY_LIMIT);
+        Bundle bundle = this.getArguments();
+        if (bundle != null) {
+
+            String order = bundle.getString("order");
+            String direction = bundle.getString("direction");
+
+            if (direction != null && order != null) {
+                switch (direction) {
+                    case "ASCENDING":
+                        query = FirebaseRepository.getFirebaseFirestore().collection(FirebaseRepository.getMail())
+                                .orderBy(order, Query.Direction.ASCENDING)
+                                .limit(DISPLAY_LIMIT);
+                        break;
+                    case "DESCENDING":
+                        query = FirebaseRepository.getFirebaseFirestore().collection(FirebaseRepository.getMail())
+                                .orderBy(order, Query.Direction.DESCENDING)
+                                .limit(DISPLAY_LIMIT);
+                        break;
+                }
+            }
+        }
 
         TripsAdapter adapter = new TripsAdapter(query, this, mFragmentContext);
-        RecyclerView recyclerViewTrips = view.findViewById(R.id.recycler_view_x);
-        recyclerViewTrips.setLayoutManager(new LinearLayoutManager(mFragmentContext));
-        recyclerViewTrips.setAdapter(adapter);
+        mRecyclerViewItems = view.findViewById(R.id.recycler_view_x);
+        mRecyclerViewItems.setLayoutManager(new LinearLayoutManager(mFragmentContext));
+        mRecyclerViewItems.setAdapter(adapter);
+        setItemHelper(adapter);
         adapter.startListening();
     }
+
+    private void setItemHelper(final TripsAdapter adapter) {
+
+        ItemTouchHelper helper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+            Drawable background;
+            boolean initiated;
+            Drawable xMark;
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                    float dX, float dY, int actionState, boolean isCurrentlyActive) {
+
+                View itemView = viewHolder.itemView;
+
+                if (viewHolder.getAdapterPosition() == -1) {
+                    // not interested in those
+                    return;
+                }
+
+                if (!initiated) {
+                    init();
+                }
+
+                background.setBounds(itemView.getRight() + (int) dX, itemView.getTop(), itemView.getRight(), itemView.getBottom());
+                background.draw(c);
+
+                int xMarkTop = itemView.getTop() + (itemView.getHeight() - xMark.getIntrinsicHeight()) / 2;
+                int xMarkBottom = xMarkTop + xMark.getIntrinsicHeight();
+                int xMarkLeft = itemView.getRight() - (itemView.getWidth() - xMark.getIntrinsicWidth()) / 6;
+                int xMarkRight = xMarkLeft + xMark.getIntrinsicWidth();
+
+
+                xMark.setBounds(xMarkLeft, xMarkTop, xMarkRight, xMarkBottom);
+                xMark.draw(c);
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+
+            }
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder,
+                                  @NonNull RecyclerView.ViewHolder viewHolder1) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull final RecyclerView.ViewHolder viewHolder, int direction) {
+
+                AlertDialog.Builder builder = new AlertDialog.Builder(mFragmentContext);
+                builder.setTitle("Attention!");
+                builder.setMessage("Are you sure to delete?");
+
+
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        int position = viewHolder.getAdapterPosition();
+                        final Trip currentTrip = adapter.getSnapshot(position).toObject(Trip.class);
+                        if (currentTrip != null) {
+                            FirebaseRepository.getTrips().document(currentTrip.getTripId()).delete().addOnSuccessListener(new OnSuccessListener<Void>() {
+                                @Override
+                                public void onSuccess(Void aVoid) {
+                                    StorageReference storageRef =
+                                            FirebaseRepository.getFirebaseStorage().getReference();
+                                    StorageReference imgStorageRef =
+                                            storageRef.child(FirebaseRepository.getMail()).child(currentTrip.getTripId() + ".jpg");
+                                    imgStorageRef.delete();
+                                    Toast.makeText(mFragmentContext, "The trip was removed",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+
+                        checkForTrips();
+
+                        AsyncTask.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (currentTrip != null) {
+                                    LocalDatabase.getTravelJournalDatabase(mFragmentContext).tripsDao().deleteByTripId(currentTrip.getTripId());
+                                }
+                                DatabaseInitializer.populateAsync(LocalDatabase.getTravelJournalDatabase(mFragmentContext));
+                            }
+                        });
+                    }
+                });
+
+                builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+
+                AlertDialog dialog = builder.create();
+                dialog.show();
+
+            }
+
+            private void init() {
+                background = new ColorDrawable(Color.WHITE);
+                xMark = ContextCompat.getDrawable(mFragmentContext, R.drawable.ic_delete_black_24dp);
+                if (xMark != null) {
+                    xMark.setColorFilter(mFragmentContext.getColor(R.color.colorPrimary), PorterDuff.Mode.SRC_ATOP);
+                }
+                initiated = true;
+            }
+        });
+        helper.attachToRecyclerView(mRecyclerViewItems);
+    }
+
 }

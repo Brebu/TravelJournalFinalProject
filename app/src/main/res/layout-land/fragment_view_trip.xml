@@ -9,15 +9,16 @@
 
     <android.support.v7.widget.CardView
         android:id="@+id/cardView"
-        android:layout_width="0dp"
-        android:layout_height="300dp"
+        android:layout_width="400dp"
+        android:layout_height="0dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         app:cardCornerRadius="8dp"
         app:cardElevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -32,6 +33,7 @@
                 android:layout_height="wrap_content"
                 android:background="#F2F2F2"
                 android:padding="8dp"
+                android:text="end date"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -40,7 +42,7 @@
 
             <ImageView
                 android:id="@+id/imageView_ViewTravelImage"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:adjustViewBounds="true"
                 android:clickable="true"
@@ -48,11 +50,12 @@
                 android:cropToPadding="true"
                 android:focusable="true"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:scaleType="fitXY"
+                android:scaleType="centerCrop"
                 app:layout_constraintBottom_toTopOf="@+id/textView_ViewTravelName"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toStartOf="parent" />
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:srcCompat="@tools:sample/backgrounds/scenic[12]" />
 
             <ImageView
                 android:id="@+id/imageView_ViewTravelFavourite"
@@ -62,7 +65,7 @@
                 android:layout_marginEnd="8dp"
                 android:contentDescription="@string/view_travel_favourite_image"
                 android:src="@drawable/ic_bookmark_full"
-                app:layout_constraintEnd_toEndOf="@+id/imageView_ViewTravelImage"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
@@ -73,6 +76,7 @@
                 android:layout_marginTop="8dp"
                 android:background="#99000000"
                 android:elevation="2dp"
+                android:text=" 2000 $ "
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                 android:textColor="#ffffff"
                 app:layout_constraintStart_toStartOf="parent"
@@ -85,6 +89,7 @@
                 android:background="#99000000"
                 android:paddingLeft="8dp"
                 android:paddingBottom="8dp"
+                android:text="Destination"
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                 android:textColor="#ffffff"
                 android:textStyle="bold"
@@ -115,6 +120,7 @@
                 android:layout_height="wrap_content"
                 android:background="#F2F2F2"
                 android:paddingLeft="8dp"
+                android:text="Vacanta de vara"
                 android:textAppearance="@style/TextAppearance.AppCompat.Headline"
                 app:layout_constraintBottom_toTopOf="@+id/textView_ViewTravelStartDate"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -126,11 +132,13 @@
                 android:layout_height="wrap_content"
                 android:background="#F2F2F2"
                 android:padding="8dp"
+                android:text="Start date"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/textView_ViewTravelEndDate"
                 app:layout_constraintHorizontal_chainStyle="spread"
                 app:layout_constraintStart_toStartOf="parent" />
+
 
         </android.support.constraint.ConstraintLayout>
     </android.support.v7.widget.CardView>

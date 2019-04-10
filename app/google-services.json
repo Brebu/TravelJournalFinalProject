@@ -15,7 +15,7 @@
       },
       "oauth_client": [
         {
-          "client_id": "632006679611-6me96csmmqv9g94qc6c7o8legamrf826.apps.googleusercontent.com",
+          "client_id": "632006679611-6k17nqf4jglkcoiuhbkk28m3o865di42.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.brebu.traveljournalfinalproject",
@@ -33,20 +33,13 @@
         }
       ],
       "services": {
-        "analytics_service": {
-          "status": 1
-        },
         "appinvite_service": {
-          "status": 2,
           "other_platform_oauth_client": [
             {
               "client_id": "632006679611-b34frskm1pv5chpc6h66e4vm47flo55u.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
-        },
-        "ads_service": {
-          "status": 2
         }
       }
     }

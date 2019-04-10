@@ -9,15 +9,15 @@
             android:icon="@drawable/ic_home_black_24dp"
             android:title="Home" />
         <item
-            android:id="@+id/nav_gallery"
+            android:id="@+id/nav_favourites"
             android:icon="@drawable/ic_favorite_black_24dp"
             android:title="Favourite" />
         <item
-            android:id="@+id/nav_slideshow"
+            android:id="@+id/nav_about_us"
             android:icon="@drawable/ic_info_black_24dp"
             android:title="About Us" />
         <item
-            android:id="@+id/nav_manage"
+            android:id="@+id/nav_contact"
             android:icon="@drawable/ic_email_black_24dp"
             android:title="Contact" />
     </group>
