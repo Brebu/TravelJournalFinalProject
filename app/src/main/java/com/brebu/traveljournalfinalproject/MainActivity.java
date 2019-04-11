@@ -2,7 +2,6 @@ package com.brebu.traveljournalfinalproject;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,8 +25,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.brebu.traveljournalfinalproject.fragments.AboutUsFragment;
 import com.brebu.traveljournalfinalproject.fragments.FavouriteFragment;
-import com.brebu.traveljournalfinalproject.fragments.HomeFragment;
 import com.brebu.traveljournalfinalproject.fragments.TabbedFragment;
 import com.brebu.traveljournalfinalproject.fragments.WelcomeFragment;
 import com.brebu.traveljournalfinalproject.models.Trip;
@@ -40,13 +39,11 @@ import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.crashlytics.android.Crashlytics;
-import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -54,7 +51,6 @@ import java.io.File;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import io.fabric.sdk.android.Fabric;
@@ -65,37 +61,46 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         GoogleApiClient.OnConnectionFailedListener, Constants {
 
     public static final Handler HANDLER = new Handler();
+
     //Constants
     private static final String TAG = "MainActivity";
+
     //View instances
     private DrawerLayout mDrawerLayout;
-    private GoogleApiClient mGoogleApiClient;
     private ImageView mImageViewProfilePicture;
     private NavigationView mNavigationView;
     private TextView mTextViewProfileMail;
     private TextView mTextViewProfileName;
-    private TextView mTextViewWelcome;
 
+    //All fragments from activity
+    private Fragment mFragmentAboutUsFragment;
+    private Fragment mFragmentFavouriteFragment;
+    private Fragment mFragmentTabbed;
+    private Fragment mFragmentWelcomeFragment;
+
+    //Google instances
+    private GoogleApiClient mGoogleApiClient;
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        initCrashlytics();
+        initView();
+        initFragments();
+        initFirebase();
+        initGoogleClient();
+        initLocalDatabase();
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 999) {
-            if (resultCode == RESULT_OK) {
-                String[] ids = AppInviteInvitation.getInvitationIds(resultCode, data);
-                for (String id : ids) {
-                    Log.d(TAG, "id of sent invitation: " + id);
-                }
-            } else {
-                Toast.makeText(this,"Failed to send invitation",Toast.LENGTH_LONG).show();
-            }
-        }
-        if (requestCode == ADD_NEW_TRIP) {
+        if (requestCode == ADD_NEW_TRIP && data != null) {
             if (resultCode == Activity.RESULT_OK) {
 
-                mTextViewWelcome.setVisibility(View.INVISIBLE);
-
-                assert data != null;
+                //Get all data from intent
                 String tripName = data.getStringExtra(TRIP_NAME);
                 String tripDestination = data.getStringExtra(TRIP_DESTINATION);
                 String tripType = data.getStringExtra(TRIP_TYPE);
@@ -105,11 +110,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 String tripRating = data.getStringExtra(TRIP_RATING);
                 String tripFirestorePath = data.getStringExtra(FIRESTORE_PATH);
                 final String tripPhotoPath = data.getStringExtra(PHOTO_PATH);
+
+                //Convert photo path to file image uri
                 File image = new File(tripPhotoPath);
                 Uri tempUri = Uri.fromFile(image);
 
+                //Convert price from snackBar
                 int convertedPrice = Integer.parseInt(tripPrice) * 50;
+
+                //Convert rating from ratingBar
                 float convertedRating = Float.parseFloat(tripRating);
+
+                //Convert string to date
                 Date tempStartDate = null;
                 Date tempEndDate = null;
                 try {
@@ -121,39 +133,55 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     e.getStackTrace();
                 }
 
-
+                //Image to byte[]
                 byte[] dataBitmap = bitmapToData(tempUri, this);
 
+                //Generate trip object with all parameters gained above
                 final Trip trip = new Trip(tripName, tripDestination, tripType, convertedPrice,
                         tempStartDate, tempEndDate, convertedRating, tempUri.toString(),
                         tripFirestorePath, false);
 
+                //Declare and initialize storage reference
                 StorageReference storageRef = FirebaseRepository.getFirebaseStorage().getReference();
-                StorageReference imgStorageRef =
-                        storageRef.child(FirebaseRepository.getMail()).child(trip.getTripId() + ".jpg");
 
+                //Declare and initialize the image storage reference
+                StorageReference imgStorageRef = storageRef.child(FirebaseRepository.getMail()).child(trip.getTripId() + getString(R.string.jpg_ext));
+
+                //Begin upload image to firebase storage
                 UploadTask uploadTask = imgStorageRef.putBytes(dataBitmap);
+
                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+
+                        //Try to get the url of uploaded image
                         Task<Uri> firebaseUri = taskSnapshot.getStorage().getDownloadUrl();
+
                         firebaseUri.addOnSuccessListener(new OnSuccessListener<Uri>() {
+
                             @Override
                             public void onSuccess(Uri uri) {
+
+                                //Replace user id on trip object
                                 trip.setUserId(FirebaseRepository.getMail());
+
+                                //Replace firebase image location on trip object
                                 trip.setTripImageFirestore(uri.toString());
-                                FirebaseRepository.getTrips().document(trip.getTripId()).set(trip);
-                                Toast.makeText(MainActivity.this, "Trip added successfully!",
-                                        Toast.LENGTH_SHORT).show();
-                                mNavigationView.getMenu().getItem(0).setChecked(true);
-                                FirebaseRepository.getTrips().get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+
+                                FirebaseRepository.getTrips().document(trip.getTripId()).set(trip).addOnSuccessListener(new OnSuccessListener<Void>() {
+
                                     @Override
-                                    public void onSuccess(QuerySnapshot documentSnapshots) {
-                                        if (documentSnapshots.size() == 1) {
-                                            setTitle("Home");
-                                            mTextViewWelcome.setVisibility(View.GONE);
-                                            createDynamicFragment(new TabbedFragment());
-                                        }
+                                    public void onSuccess(Void aVoid) {
+
+                                        //Focus home menu item
+                                        mNavigationView.getMenu().getItem(0).setChecked(true);
+
+                                        //Replace fragment with home fragment
+                                        createDynamicFragment(mFragmentTabbed);
+
+                                        Toast.makeText(MainActivity.this, "Trip added successfully!", Toast.LENGTH_SHORT).show();
+
                                     }
                                 });
                             }
@@ -166,12 +194,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
+        //Close drawer if is opened
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         }
-        int count = getSupportFragmentManager().getBackStackEntryCount();
 
+        //PopBackStack if exist
+        int count = getSupportFragmentManager().getBackStackEntryCount();
         if (count == 0) {
             super.onBackPressed();
         } else {
@@ -181,17 +211,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        Fabric.with(this, new Crashlytics());
-        initView();
-        initFirebase();
-        initGoogleClient();
-        DatabaseInitializer.populateAsync(LocalDatabase.getTravelJournalDatabase(this));
+        Toast.makeText(this, "Failed to connect", Toast.LENGTH_SHORT).show();
+        Log.e(TAG, "Failed to connect");
     }
 
     @Override
@@ -201,60 +222,78 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_home) {
-            getSupportFragmentManager().popBackStack();
+
+            //Set home fragment
             createDynamicFragment(new TabbedFragment());
+
         } else if (id == R.id.nav_favourites) {
-            getSupportFragmentManager().popBackStack();
-            createDynamicFragment(new FavouriteFragment());
+
+            //Set favourites fragment
+            createDynamicFragment(mFragmentFavouriteFragment);
 
         } else if (id == R.id.nav_about_us) {
-            getSupportFragmentManager().popBackStack();
+
+            //Set about us fragment
+            createDynamicFragment(mFragmentAboutUsFragment);
+
         } else if (id == R.id.nav_contact) {
 
-            getSupportFragmentManager().popBackStack();
-            Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("message/rfc822");
-            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"brebu.ciprian@gmail.com"});
-            i.putExtra(Intent.EXTRA_SUBJECT, "Message from: " + FirebaseRepository.getUsername());
+            //Create sendIntent to send mail
+            Intent sendIntent = new Intent(Intent.ACTION_SEND);
+
+            //Set type
+            sendIntent.setType(getString(R.string.message_rfc822));
+
+            //Set destination mail
+            sendIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{getString(R.string.developer_mail_address)});
+
+            //Set subject with authenticated user name
+            sendIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.message_from) + FirebaseRepository.getUsername());
+
+            //Check for installed client
             try {
-                startActivity(Intent.createChooser(i, "Contact this developer"));
+
+                startActivity(Intent.createChooser(sendIntent, getString(R.string.contact_application_developer)));
+
             } catch (android.content.ActivityNotFoundException ex) {
-                Toast.makeText(this, "There are no email clients installed.", Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(this, getString(R.string.no_mail_client_installed), Toast.LENGTH_SHORT).show();
+
             }
 
         } else if (id == R.id.nav_share) {
-            getSupportFragmentManager().popBackStack();
 
-            Intent sendIntent = new Intent();
-            sendIntent.setAction(Intent.ACTION_SEND);
-            sendIntent.putExtra(Intent.EXTRA_TEXT, "Here is a good project! \n https://traveljournalfinalproject.page.link/install");
-            sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Let's install!");
-            sendIntent.setType("text/plain");
-            startActivity(Intent.createChooser(sendIntent,
-                    "Send to.."));
+            //Create an intent used for share
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
 
-        } else if (id == R.id.nav_send) {
+            //Set message
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Here you will find it!   https://traveljournalfinalproject.page.link/install");
 
-                Intent intent = new AppInviteInvitation.IntentBuilder("Try out my cool app!")
-                        .setMessage("Hey, this app is really cool. I thought you might like it!")
-                        .setDeepLink(Uri.parse("https://traveljournalfinalproject.page.link/install"))
-                        .setCallToActionText("Let's do this!")
-                        .build();
-                startActivityForResult(intent, 999);
+            //Set type
+            shareIntent.setType("text/plain");
+
+            //Set message
+            startActivity(Intent.createChooser(shareIntent, "Share with friends"));
+
+        } else if (id == R.id.find_cv) {
+
+            //Create cv download intent
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.cv_link)));
+            startActivity(intent);
 
         }
 
         mDrawerLayout.closeDrawer(GravityCompat.START);
+
         return true;
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -272,28 +311,50 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void createDynamicFragment(Fragment fragment) {
+
+        //Create fragment manager
         FragmentManager fragmentManager = this.getSupportFragmentManager();
+
+        //Create fragment transaction
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        //Replace a fragment
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, fragment);
+
+        //Commit transaction
         fragmentTransaction.commit();
+    }
+
+    private void initCrashlytics() {
+
+        //Initialize Crashlytics
+        Fabric.with(this, new Crashlytics());
+
     }
 
     private void initFirebase() {
 
+        //Check for sign in
         if (FirebaseRepository.getFirebaseAuth() != null && FirebaseRepository.getFirebaseUser() == null) {
+
+            //Return to sign in activity
             startActivity(new Intent(this, SignInActivity.class));
             finish();
+
         } else {
-            setTitle("Welcome");
-            createDynamicFragment(new WelcomeFragment());
-            mTextViewWelcome.setVisibility(View.GONE);
+
+            //Set welcome fragment
+            createDynamicFragment(mFragmentWelcomeFragment);
 
             if (FirebaseRepository.getUsername() != null && !FirebaseRepository.getUsername().isEmpty()) {
+
+                //Set profile name in header
                 mTextViewProfileName.setText(FirebaseRepository.getUsername());
+
             }
             if (FirebaseRepository.getPhotoUrl() != null) {
 
-
+                //Set profile picture in header with Glide
                 RequestOptions options = new RequestOptions()
                         .centerCrop()
                         .placeholder(R.drawable.no_picture)
@@ -309,25 +370,49 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                         .into(mImageViewProfilePicture);
             }
             if (FirebaseRepository.getMail() != null && !FirebaseRepository.getMail().isEmpty()) {
+
+                //Set profile mail address in header
                 mTextViewProfileMail.setText(FirebaseRepository.getMail());
+
             }
         }
     }
 
+    private void initFragments() {
+
+        //Initiate all activity fragments
+        mFragmentFavouriteFragment = new FavouriteFragment();
+        mFragmentTabbed = new TabbedFragment();
+        mFragmentWelcomeFragment = new WelcomeFragment();
+        mFragmentAboutUsFragment = new AboutUsFragment();
+
+    }
+
     private void initGoogleClient() {
+
+        //Initialize Google API Client
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this /* FragmentActivity */,
                         this /* OnConnectionFailedListener */)
                 .addApi(Auth.GOOGLE_SIGN_IN_API)
                 .build();
+
+    }
+
+    private void initLocalDatabase() {
+
+        //Initialize local database
+        DatabaseInitializer.populateAsync(LocalDatabase.getTravelJournalDatabase(this));
+
     }
 
     private void initView() {
 
-
+        //Initialize and set action bar toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //Initialize FAB and set onClickListener
         FloatingActionButton floatingActionButton = findViewById(R.id.fab);
         floatingActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -339,23 +424,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
 
+        //Initialize drawer layout
         mDrawerLayout = findViewById(R.id.drawer_layout);
-
         ActionBarDrawerToggle actionBarDrawerToggle = new ActionBarDrawerToggle(
                 this, mDrawerLayout, toolbar, R.string.navigation_drawer_open,
                 R.string.navigation_drawer_close);
         mDrawerLayout.addDrawerListener(actionBarDrawerToggle);
         actionBarDrawerToggle.syncState();
 
+        //Initialize navigation view, header view and all of header view views
         mNavigationView = findViewById(R.id.nav_view);
         mNavigationView.setNavigationItemSelectedListener(this);
         View view = mNavigationView.getHeaderView(0);
-
         mImageViewProfilePicture = view.findViewById(R.id.imageView_profilePicture);
         mTextViewProfileName = view.findViewById(R.id.textView_profileName);
         mTextViewProfileMail = view.findViewById(R.id.textView_emailProfile);
-        mTextViewWelcome = findViewById(R.id.TextView_Welcome);
-        mTextViewWelcome.setVisibility(View.GONE);
     }
 
 }

@@ -15,7 +15,6 @@ import com.brebu.traveljournalfinalproject.room.Users;
 import java.util.Date;
 import java.util.UUID;
 
-
 @Entity(foreignKeys = @ForeignKey(entity = Users.class,
         parentColumns = "id",
         childColumns = "user_id",

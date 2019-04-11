@@ -42,9 +42,6 @@ public class FavouriteTripsAdapter extends RecyclerView.Adapter<TripsViewHolder>
         tripsViewHolder.getTextViewDestinationTrip().setText(currentTrip.getTripDestination());
         tripsViewHolder.getRatingBarTrip().setRating(currentTrip.getTripRating());
 
-
-
-
         //Set Price
         int tripPrice = currentTrip.getTripPrice();
         if (tripPrice != 0) {

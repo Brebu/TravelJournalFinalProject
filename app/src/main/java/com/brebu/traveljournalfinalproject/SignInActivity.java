@@ -25,9 +25,10 @@ import com.google.firebase.auth.GoogleAuthProvider;
 
 public class SignInActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
-    private static final int RC_SIGN_IN = 9001;
     //Constants
+    private static final int RC_SIGN_IN = 9001;
     private static final String TAG = "SignInActivity";
+
     //Firebase and Google class instances
     private GoogleApiClient mGoogleApiClient;
 
@@ -73,21 +74,25 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
 
     private void firebaseAuthWithGoogle(GoogleSignInAccount account) {
 
-        AuthCredential authCredential = GoogleAuthProvider.getCredential(account.getIdToken(),
-                null);
-        FirebaseRepository.getFirebaseAuth().signInWithCredential(authCredential)
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (!task.isSuccessful()) {
-                            Toast.makeText(SignInActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                        } else {
-                            startActivity(new Intent(SignInActivity.this, MainActivity.class));
-                            finish();
-                        }
-                    }
-                });
+        AuthCredential authCredential = GoogleAuthProvider.getCredential(account.getIdToken(), null);
+
+        FirebaseRepository.getFirebaseAuth().signInWithCredential(authCredential).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+
+            @Override
+            public void onComplete(@NonNull Task<AuthResult> task) {
+
+                if (!task.isSuccessful()) {
+
+                    Toast.makeText(SignInActivity.this, "Authentication failed.", Toast.LENGTH_SHORT).show();
+
+                } else {
+
+                    startActivity(new Intent(SignInActivity.this, MainActivity.class));
+                    finish();
+
+                }
+            }
+        });
     }
 
     private void initGoogleApiClient() {
@@ -104,13 +109,16 @@ public class SignInActivity extends AppCompatActivity implements GoogleApiClient
     }
 
     private void initView() {
-        //View class instances
+
         SignInButton signInButton = findViewById(R.id.btn_signInGoogle);
         signInButton.setOnClickListener(this);
+
     }
 
     private void signIn() {
+
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         startActivityForResult(signInIntent, RC_SIGN_IN);
+
     }
 }

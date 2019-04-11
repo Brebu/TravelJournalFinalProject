@@ -53,29 +53,34 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
 
     @Override
     public void onIconPressed(Trip trip, ImageButton imageButton) {
+
         Toast.makeText(mFragmentActivity, "Please make favourite from home", Toast.LENGTH_LONG).show();
+
     }
 
     @Override
     public void onTripLongPressed(Trip trip) {
+
         Toast.makeText(mFragmentActivity, "Please edit only from home", Toast.LENGTH_LONG).show();
+
     }
 
     @Override
     public void onTripSelected(Trip trip) {
+
         ViewTripFragment displayTrip = new ViewTripFragment();
+
         Bundle bundle = new Bundle();
         bundle.putString(TRIP_NAME, trip.getTripName());
         bundle.putString(TRIP_DESTINATION, trip.getTripDestination());
         bundle.putInt(TRIP_PRICE, trip.getTripPrice());
         bundle.putFloat(TRIP_RATING, trip.getTripRating());
-        bundle.putString(START_DATE,
-                DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getTripStartDate()));
-        bundle.putString(END_DATE,
-                DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getTripEndDate()));
+        bundle.putString(START_DATE, DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getTripStartDate()));
+        bundle.putString(END_DATE, DateFormat.getDateInstance(DateFormat.SHORT, Locale.UK).format(trip.getTripEndDate()));
         bundle.putString(FIRESTORE_PATH, trip.getTripImageFirestore());
         bundle.putString(TRIP_FAVOURITE, String.valueOf(true));
         displayTrip.setArguments(bundle);
+
         FragmentManager fragmentManager = mFragmentActivity.getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.frame_layout_drawer_fragment, displayTrip);
@@ -92,23 +97,32 @@ public class FavouriteFragment extends Fragment implements OnTripSelectedListene
     private void initView(View view) {
 
         AsyncTask.execute(new Runnable() {
+
             @Override
             public void run() {
+
                 if (LocalDatabase.getTravelJournalDatabase(mFragmentActivity).tripsDao().getAllTrips(FirebaseRepository.getMail()).isEmpty()) {
+
                     createDynamicFragment(new EmptyFragment());
+
                 }
             }
         });
 
         mFragmentActivity = getActivity();
+
         if (mFragmentActivity != null) {
+
             mFragmentActivity.setTitle("Favourites");
+
         }
+
         mRecyclerViewItems = view.findViewById(R.id.recycler_view_x);
         mRecyclerViewItems.setLayoutManager(new LinearLayoutManager(mFragmentActivity));
         mAdapter = new FavouriteTripsAdapter(DatabaseInitializer.getTripList(), mFragmentActivity, this);
         setItemHelper(mAdapter);
         mRecyclerViewItems.setAdapter(mAdapter);
+
     }
 
     private void setItemHelper(final FavouriteTripsAdapter adapter) {

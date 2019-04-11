@@ -10,7 +10,7 @@ import android.widget.TextView;
 
 import com.brebu.traveljournalfinalproject.R;
 
-public class TripsViewHolder extends RecyclerView.ViewHolder {
+class TripsViewHolder extends RecyclerView.ViewHolder {
 
     private ImageButton imageButtonTrip;
     private ImageView imageViewTrip;
@@ -21,7 +21,7 @@ public class TripsViewHolder extends RecyclerView.ViewHolder {
     private TextView textViewTitleTrip;
     private RatingBar mRatingBarTrip;
 
-    public TripsViewHolder(@NonNull View itemView) {
+    TripsViewHolder(@NonNull View itemView) {
         super(itemView);
 
         mRatingBarTrip = itemView.findViewById(R.id.ratingBar_travelRating);
@@ -35,35 +35,35 @@ public class TripsViewHolder extends RecyclerView.ViewHolder {
     }
 
 
-    public ImageButton getImageButtonTrip() {
+    ImageButton getImageButtonTrip() {
         return imageButtonTrip;
     }
 
-    public ImageView getImageViewTrip() {
+    ImageView getImageViewTrip() {
         return imageViewTrip;
     }
 
-    public View getItemView() {
+    View getItemView() {
         return mItemView;
     }
 
-    public TextView getTextViewDestinationTrip() {
+    TextView getTextViewDestinationTrip() {
         return textViewDestinationTrip;
     }
 
-    public TextView getTextViewEndDate() {
+    TextView getTextViewEndDate() {
         return textViewEndDate;
     }
 
-    public TextView getTextViewStartDate() {
+    TextView getTextViewStartDate() {
         return textViewStartDate;
     }
 
-    public TextView getTextViewTitleTrip() {
+    TextView getTextViewTitleTrip() {
         return textViewTitleTrip;
     }
 
-    public RatingBar getRatingBarTrip() {
+    RatingBar getRatingBarTrip() {
         return mRatingBarTrip;
     }
 }

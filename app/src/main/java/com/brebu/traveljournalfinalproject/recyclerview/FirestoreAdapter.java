@@ -99,16 +99,16 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         notifyItemRemoved(oldInt);
     }
 
-    public void setQuery(Query query) {
-
-        stopListening();
-
-        mSnapshots.clear();
-        notifyDataSetChanged();
-
-        mQuery = query;
-        startListening();
-    }
+//    public void setQuery(Query query) {
+//
+//        stopListening();
+//
+//        mSnapshots.clear();
+//        notifyDataSetChanged();
+//
+//        mQuery = query;
+//        startListening();
+//    }
 
     public void startListening() {
         if (mQuery != null && mRegistration == null) {
@@ -116,13 +116,13 @@ public abstract class FirestoreAdapter<VH extends RecyclerView.ViewHolder>
         }
     }
 
-    private void stopListening() {
-        if (mRegistration != null) {
-            mRegistration.remove();
-            mRegistration = null;
-        }
-
-        mSnapshots.clear();
-        notifyDataSetChanged();
-    }
+//    private void stopListening() {
+//        if (mRegistration != null) {
+//            mRegistration.remove();
+//            mRegistration = null;
+//        }
+//
+//        mSnapshots.clear();
+//        notifyDataSetChanged();
+//    }
 }

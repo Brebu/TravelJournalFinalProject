@@ -24,7 +24,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 public class TabbedFragment extends Fragment implements Constants {
 
     private FragmentActivity mFragmentActivity;
-
+    private Fragment mFragmentHomeDateAsc;
+    private Fragment mFragmentHomeDateDsc;
+    private Fragment mFragmentHomePriceAsc;
+    private Fragment mFragmentHomePriceDsc;
+    private Fragment mFragmentHomeRatingAsc;
+    private Fragment mFragmentHomeRatingDsc;
 
 
     private void createDynamicFragment(Fragment fragment) {
@@ -39,18 +44,24 @@ public class TabbedFragment extends Fragment implements Constants {
                              Bundle savedInstanceState) {
 
         mFragmentActivity = getActivity();
-
         FirebaseRepository.getTrips().get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+
             @Override
             public void onSuccess(QuerySnapshot documentSnapshots) {
+
                 if (documentSnapshots.isEmpty()) {
+
                     createDynamicFragment(new EmptyFragment());
                 }
+
             }
+
         });
 
         if (mFragmentActivity != null) {
+
             mFragmentActivity.setTitle("Home");
+
         }
 
         View view = inflater.inflate(R.layout.fragment_tabbed, container, false);
@@ -66,12 +77,19 @@ public class TabbedFragment extends Fragment implements Constants {
         tabLayout.addOnTabSelectedListener(new TabLayout.ViewPagerOnTabSelectedListener(viewPager));
         tabLayout.setTabRippleColor(null);
 
+        mFragmentHomeDateAsc = new HomeFragment();
+        mFragmentHomeDateDsc = new HomeFragment();
+        mFragmentHomePriceAsc = new HomeFragment();
+        mFragmentHomePriceDsc = new HomeFragment();
+        mFragmentHomeRatingAsc = new HomeFragment();
+        mFragmentHomeRatingDsc = new HomeFragment();
+
         return view;
     }
 
     public class PagerAdapter extends FragmentStatePagerAdapter {
 
-        private Fragment createDynamicFragment(Fragment fragment, String order, String direction) {
+        private Fragment setFragmentArguments(Fragment fragment, String order, String direction) {
             Bundle bundle = new Bundle();
             bundle.putString("order", order);
             bundle.putString("direction", direction);
@@ -84,17 +102,17 @@ public class TabbedFragment extends Fragment implements Constants {
 
             switch (position) {
                 case 0:
-                    return createDynamicFragment(new HomeFragment(),START_DATE,Query.Direction.ASCENDING.toString());
+                    return setFragmentArguments(mFragmentHomeDateAsc,START_DATE,Query.Direction.ASCENDING.toString());
                 case 1:
-                    return createDynamicFragment(new HomeFragment(),START_DATE,Query.Direction.DESCENDING.toString());
+                    return setFragmentArguments(mFragmentHomeDateDsc,START_DATE,Query.Direction.DESCENDING.toString());
                 case 2:
-                    return createDynamicFragment(new HomeFragment(),TRIP_PRICE,Query.Direction.ASCENDING.toString());
+                    return setFragmentArguments(mFragmentHomePriceAsc,TRIP_PRICE,Query.Direction.ASCENDING.toString());
                 case 3:
-                    return createDynamicFragment(new HomeFragment(),TRIP_PRICE,Query.Direction.DESCENDING.toString());
+                    return setFragmentArguments(mFragmentHomePriceDsc,TRIP_PRICE,Query.Direction.DESCENDING.toString());
                 case 4:
-                    return createDynamicFragment(new HomeFragment(),TRIP_RATING,Query.Direction.ASCENDING.toString());
+                    return setFragmentArguments(mFragmentHomeRatingAsc,TRIP_RATING,Query.Direction.ASCENDING.toString());
                 case 5:
-                    return createDynamicFragment(new HomeFragment(),TRIP_RATING,Query.Direction.DESCENDING.toString());
+                    return setFragmentArguments(mFragmentHomeRatingDsc,TRIP_RATING,Query.Direction.DESCENDING.toString());
 
                 default:
                     return null;
@@ -107,7 +125,7 @@ public class TabbedFragment extends Fragment implements Constants {
             return 6;
         }
 
-        public PagerAdapter(FragmentManager fm) {
+        PagerAdapter(FragmentManager fm) {
             super(fm);
         }
     }

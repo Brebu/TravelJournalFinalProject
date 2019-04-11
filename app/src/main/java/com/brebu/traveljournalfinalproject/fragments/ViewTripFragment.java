@@ -21,31 +21,28 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import com.brebu.traveljournalfinalproject.R;
-import com.brebu.traveljournalfinalproject.repository.FirebaseRepository;
 import com.brebu.traveljournalfinalproject.utils.Constants;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
-import com.squareup.picasso.Picasso;
-
 
 public class ViewTripFragment extends Fragment implements Constants {
 
-    private Animator currentAnimator;
-    private int shortAnimationDuration;
-
-    private FragmentActivity mFragmentActivity;
+    //View instances
     private ImageView mImageViewTripFavourite;
     private ImageView mImageViewTripImage;
     private RatingBar mRatingBarTripRating;
     private TextView mTextViewTripDestination;
-    private TextView mTextViewTripEndDate;
     private TextView mTextViewTripName;
     private TextView mTextViewTripPrice;
     private TextView mTextViewTripStartDate;
-    private ImageView expandedImageView;
+    private ImageView mExpandedImageView;
 
+    //Class instances
+    private Animator mCurrentAnimator;
+    private int mShortAnimationDuration;
+    private FragmentActivity mFragmentActivity;
     private Bundle mBundle;
 
     @Override
@@ -57,25 +54,17 @@ public class ViewTripFragment extends Fragment implements Constants {
         initView(view);
         inflateView();
 
-
-
         mImageViewTripImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View newView) {
-               zoomImageFromThumb(mFragmentActivity.findViewById(R.id.cardView));
+                zoomImageFromThumb(mFragmentActivity.findViewById(R.id.cardView));
             }
         });
 
         // Retrieve and cache the system's default "short" animation time.
-        shortAnimationDuration = getResources().getInteger(
+        mShortAnimationDuration = getResources().getInteger(
                 android.R.integer.config_shortAnimTime);
-
         return view;
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
     }
 
     @SuppressLint("SetTextI18n")
@@ -86,8 +75,7 @@ public class ViewTripFragment extends Fragment implements Constants {
             mTextViewTripName.setText(mBundle.getString(TRIP_NAME));
             mTextViewTripDestination.setText(mBundle.getString(TRIP_DESTINATION));
             mTextViewTripPrice.setText(" " + mBundle.getInt(TRIP_PRICE) + " € ");
-            mTextViewTripStartDate.setText("Start date: " + mBundle.getString(START_DATE));
-            mTextViewTripEndDate.setText("End date: " + mBundle.getString(END_DATE));
+            mTextViewTripStartDate.setText("Period: " + mBundle.getString(START_DATE) + " - " + mBundle.getString(END_DATE));
 
             float convertedRating = mBundle.getFloat(TRIP_RATING);
             mRatingBarTripRating.setRating(convertedRating);
@@ -99,7 +87,15 @@ public class ViewTripFragment extends Fragment implements Constants {
                 mImageViewTripFavourite.setImageResource(R.drawable.ic_bookmark_border);
             }
 
-            Picasso.get().load(mBundle.getString(FIRESTORE_PATH)).noPlaceholder().resize(6000, 6000).centerCrop().onlyScaleDown()
+            RequestOptions options = new RequestOptions()
+                    .placeholder(R.drawable.no_picture)
+                    .error(R.drawable.no_picture)
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .priority(Priority.HIGH);
+
+            Glide.with(this)
+                    .load(mBundle.getString(FIRESTORE_PATH))
+                    .apply(options)
                     .into(mImageViewTripImage);
 
         }
@@ -111,17 +107,16 @@ public class ViewTripFragment extends Fragment implements Constants {
         mTextViewTripDestination = view.findViewById(R.id.textView_ViewTravelDestination);
         mTextViewTripPrice = view.findViewById(R.id.textView_ViewTravelPrice);
         mTextViewTripStartDate = view.findViewById(R.id.textView_ViewTravelStartDate);
-        mTextViewTripEndDate = view.findViewById(R.id.textView_ViewTravelEndDate);
         mRatingBarTripRating = view.findViewById(R.id.ratingBar_ViewTripRating);
         mImageViewTripImage = view.findViewById(R.id.imageView_ViewTravelImage);
         mImageViewTripFavourite = view.findViewById(R.id.imageView_ViewTravelFavourite);
-        expandedImageView = view.findViewById(R.id.expanded_image);
+        mExpandedImageView = view.findViewById(R.id.expanded_image);
     }
 
     private void zoomImageFromThumb(final View thumbView) {
 
-        if (currentAnimator != null) {
-            currentAnimator.cancel();
+        if (mCurrentAnimator != null) {
+            mCurrentAnimator.cancel();
         }
 
         // Load the high-resolution "zoomed-in" image.
@@ -135,9 +130,9 @@ public class ViewTripFragment extends Fragment implements Constants {
         Glide.with(this)
                 .load(mBundle.getString(FIRESTORE_PATH))
                 .apply(options)
-                .into(expandedImageView);
+                .into(mExpandedImageView);
 
-        expandedImageView.setElevation(100);
+        mExpandedImageView.setElevation(100);
 
         // Calculate the starting and ending bounds for the zoomed-in image.
         // This step involves lots of math. Yay, math.
@@ -182,86 +177,86 @@ public class ViewTripFragment extends Fragment implements Constants {
         // begins, it will position the zoomed-in view in the place of the
         // thumbnail.
         thumbView.setAlpha(0f);
-        expandedImageView.setVisibility(View.VISIBLE);
+        mExpandedImageView.setVisibility(View.VISIBLE);
 
         // Set the pivot point for SCALE_X and SCALE_Y transformations
         // to the top-left corner of the zoomed-in view (the default
         // is the center of the view).
-        expandedImageView.setPivotX(0f);
-        expandedImageView.setPivotY(0f);
+        mExpandedImageView.setPivotX(0f);
+        mExpandedImageView.setPivotY(0f);
 
         // Construct and run the parallel animation of the four translation and
         // scale properties (X, Y, SCALE_X, and SCALE_Y).
         AnimatorSet set = new AnimatorSet();
         set
-                .play(ObjectAnimator.ofFloat(expandedImageView, View.X,
+                .play(ObjectAnimator.ofFloat(mExpandedImageView, View.X,
                         startBounds.left, finalBounds.left))
-                .with(ObjectAnimator.ofFloat(expandedImageView, View.Y,
+                .with(ObjectAnimator.ofFloat(mExpandedImageView, View.Y,
                         startBounds.top, finalBounds.top))
-                .with(ObjectAnimator.ofFloat(expandedImageView, View.SCALE_X,
+                .with(ObjectAnimator.ofFloat(mExpandedImageView, View.SCALE_X,
                         startScale, 1f))
-                .with(ObjectAnimator.ofFloat(expandedImageView,
+                .with(ObjectAnimator.ofFloat(mExpandedImageView,
                         View.SCALE_Y, startScale, 1f));
-        set.setDuration(shortAnimationDuration);
+        set.setDuration(mShortAnimationDuration);
         set.setInterpolator(new DecelerateInterpolator());
         set.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
-                currentAnimator = null;
+                mCurrentAnimator = null;
             }
 
             @Override
             public void onAnimationCancel(Animator animation) {
-                currentAnimator = null;
+                mCurrentAnimator = null;
             }
         });
         set.start();
-        currentAnimator = set;
+        mCurrentAnimator = set;
 
         // Upon clicking the zoomed-in image, it should zoom back down
         // to the original bounds and show the thumbnail instead of
         // the expanded image.
         final float startScaleFinal = startScale;
-        expandedImageView.setOnClickListener(new View.OnClickListener() {
+        mExpandedImageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (currentAnimator != null) {
-                    currentAnimator.cancel();
+                if (mCurrentAnimator != null) {
+                    mCurrentAnimator.cancel();
                 }
 
                 // Animate the four positioning/sizing properties in parallel,
                 // back to their original values.
                 AnimatorSet set = new AnimatorSet();
                 set.play(ObjectAnimator
-                        .ofFloat(expandedImageView, View.X, startBounds.left))
+                        .ofFloat(mExpandedImageView, View.X, startBounds.left))
                         .with(ObjectAnimator
-                                .ofFloat(expandedImageView,
+                                .ofFloat(mExpandedImageView,
                                         View.Y, startBounds.top))
                         .with(ObjectAnimator
-                                .ofFloat(expandedImageView,
+                                .ofFloat(mExpandedImageView,
                                         View.SCALE_X, startScaleFinal))
                         .with(ObjectAnimator
-                                .ofFloat(expandedImageView,
+                                .ofFloat(mExpandedImageView,
                                         View.SCALE_Y, startScaleFinal));
-                set.setDuration(shortAnimationDuration);
+                set.setDuration(mShortAnimationDuration);
                 set.setInterpolator(new DecelerateInterpolator());
                 set.addListener(new AnimatorListenerAdapter() {
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         thumbView.setAlpha(1f);
-                        expandedImageView.setVisibility(View.GONE);
-                        currentAnimator = null;
+                        mExpandedImageView.setVisibility(View.GONE);
+                        mCurrentAnimator = null;
                     }
 
                     @Override
                     public void onAnimationCancel(Animator animation) {
                         thumbView.setAlpha(1f);
-                        expandedImageView.setVisibility(View.GONE);
-                        currentAnimator = null;
+                        mExpandedImageView.setVisibility(View.GONE);
+                        mCurrentAnimator = null;
                     }
                 });
                 set.start();
-                currentAnimator = set;
+                mCurrentAnimator = set;
             }
         });
     }

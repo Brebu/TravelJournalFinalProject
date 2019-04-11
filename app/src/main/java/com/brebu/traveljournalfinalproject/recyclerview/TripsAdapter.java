@@ -16,11 +16,7 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
-import com.squareup.picasso.Picasso;
 
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
 
@@ -58,9 +54,6 @@ public class TripsAdapter extends FirestoreAdapter<TripsViewHolder> {
                 tripsViewHolder.getImageButtonTrip().setImageDrawable(mContext.getDrawable(R.drawable
                         .ic_bookmark_border));
             }
-
-//            Picasso.get().load(currentTrip.getTripImageFirestore()).noPlaceholder().resize(6000,6000).centerCrop().onlyScaleDown()
-//                    .into(tripsViewHolder.getImageViewTrip());
 
             RequestOptions options = new RequestOptions()
                     .placeholder(R.drawable.no_picture)
