@@ -512,7 +512,8 @@ public class AddOrModifyTrip extends AppCompatActivity implements DatePickerDial
         if (!checkGalleryPermission()) {
 
             //Request permission
-            ActivityCompat.requestPermissions(AddOrModifyTrip.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_RT);
+            ActivityCompat.requestPermissions(AddOrModifyTrip.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, PERMISSION_RT);
+
         } else {
 
             //Create intent for select photo from gallery
@@ -537,10 +538,10 @@ public class AddOrModifyTrip extends AppCompatActivity implements DatePickerDial
         if (!checkCameraPermission()) {
 
             //Request camera permission
-            ActivityCompat.requestPermissions(AddOrModifyTrip.this, new String[]{Manifest.permission.CAMERA}, PERMISSION_RC);
+            ActivityCompat.requestPermissions(AddOrModifyTrip.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA}, PERMISSION_RC);
         } else {
 
-            //Continue with camera take pictura
+            //Continue with camera take picture
             openAndDisplay();
 
         }
@@ -550,8 +551,8 @@ public class AddOrModifyTrip extends AppCompatActivity implements DatePickerDial
 
         //Send final URI image from camera to intent
         File photoFile = createImageFile();
-        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         Uri imageUri = FileProvider.getUriForFile(this, "com.brebu.traveljournalfinalproject.provider", photoFile);
+        Intent intent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         intent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, imageUri);
         StrictMode.VmPolicy.Builder builder = new StrictMode.VmPolicy.Builder();
         StrictMode.setVmPolicy(builder.build());
