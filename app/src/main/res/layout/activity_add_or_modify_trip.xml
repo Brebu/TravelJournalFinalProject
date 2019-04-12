@@ -9,14 +9,14 @@
     <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
+        android:padding="@dimen/dp_16"
         tools:context=".AddOrModifyTrip">
 
         <TextView
             android:id="@+id/textView_cameraPhotoTrip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/take_picture"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -27,7 +27,7 @@
             android:id="@+id/textView_galleryPhotoTrip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/gallery_photo"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -36,9 +36,9 @@
 
         <TextView
             android:id="@+id/textView_ratingTrip"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/rating"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -50,7 +50,7 @@
             android:id="@+id/textView_endDateTrip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/end_date"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -61,7 +61,7 @@
             android:id="@+id/textView_startDateTrip"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/start_date"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -70,9 +70,9 @@
 
         <TextView
             android:id="@+id/textView_priceTrip"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/price_eur"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -83,9 +83,9 @@
 
         <TextView
             android:id="@+id/textView_typeTrip"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/trip_type"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -96,7 +96,7 @@
 
         <EditText
             android:id="@+id/editText_tripName"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:drawableStart="@android:drawable/ic_menu_info_details"
             android:ems="10"
@@ -104,11 +104,12 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView_titleTrip" />
+            app:layout_constraintTop_toBottomOf="@+id/textView_titleTrip"
+            tools:ignore="Autofill,LabelFor" />
 
         <TextView
             android:id="@+id/textView_titleTrip"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
             android:text="@string/trip_name"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
@@ -119,21 +120,22 @@
 
         <EditText
             android:id="@+id/editText_tripDestination"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:drawableStart="@android:drawable/ic_menu_myplaces"
             android:ems="10"
             android:inputType="textPersonName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/textView_destinationTrip" />
+            app:layout_constraintTop_toBottomOf="@+id/textView_destinationTrip"
+            tools:ignore="Autofill,LabelFor" />
 
         <TextView
             android:id="@+id/textView_destinationTrip"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:text="@string/destination"
             android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
             android:textStyle="bold"
@@ -143,9 +145,9 @@
 
         <RadioGroup
             android:id="@+id/radioGroup"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -176,9 +178,9 @@
 
         <SeekBar
             android:id="@+id/seekBar_priceTrip"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_marginTop="8dp"
+            android:layout_width="@dimen/dp_0"
+            android:layout_height="@dimen/dp_40"
+            android:layout_marginTop="@dimen/dp_8"
             android:max="10000"
             android:progress="500"
             app:layout_constraintEnd_toEndOf="parent"
@@ -188,10 +190,10 @@
         <Button
             android:id="@+id/button_startDateTrip"
             style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginTop="@dimen/dp_8"
+            android:layout_marginEnd="@dimen/dp_8"
             android:drawableStart="@android:drawable/ic_menu_my_calendar"
             android:gravity="center|start"
             android:hint="@string/dd_mm_yyy"
@@ -205,10 +207,10 @@
         <Button
             android:id="@+id/button_endDateTrip"
             style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="@dimen/dp_8"
+            android:layout_marginTop="@dimen/dp_8"
             android:drawableStart="@android:drawable/ic_menu_my_calendar"
             android:gravity="center|start"
             android:hint="@string/dd_mm_yyy"
@@ -223,7 +225,7 @@
             android:id="@+id/ratingBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:progressTint="@color/colorPrimary"
             android:rating="3.5"
             android:secondaryProgressTint="@color/colorPrimary"
@@ -255,9 +257,9 @@
         <Button
             android:id="@+id/button_save"
             style="@style/Widget.AppCompat.Button.Colored"
-            android:layout_width="0dp"
+            android:layout_width="@dimen/dp_0"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="@dimen/dp_8"
             android:backgroundTint="@color/colorPrimary"
             android:onClick="onClickSaveButton"
             android:text="@string/save"

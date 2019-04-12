@@ -7,31 +7,31 @@
         <item
             android:id="@+id/nav_home"
             android:icon="@drawable/ic_home_black_24dp"
-            android:title="Home" />
+            android:title="@string/home" />
         <item
             android:id="@+id/nav_favourites"
             android:icon="@drawable/ic_favorite_black_24dp"
-            android:title="Favourite" />
+            android:title="@string/favourite" />
         <item
             android:id="@+id/nav_about_us"
             android:icon="@drawable/ic_info_black_24dp"
-            android:title="About Us" />
+            android:title="@string/about_us" />
         <item
             android:id="@+id/nav_contact"
             android:icon="@drawable/ic_email_black_24dp"
-            android:title="Contact" />
+            android:title="@string/contact" />
     </group>
 
-    <item android:title="Communicate">
+    <item android:title="@string/communicate">
         <menu>
             <item
                 android:id="@+id/nav_share"
                 android:icon="@drawable/ic_menu_share"
-                android:title="Share" />
+                android:title="@string/share" />
             <item
                 android:id="@+id/find_cv"
                 android:icon="@drawable/ic_account_box_black_24dp"
-                android:title="Find CV" />
+                android:title="@string/find_cv" />
         </menu>
     </item>
 

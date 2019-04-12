@@ -31,4 +31,23 @@
     <string name="no_mail_client_installed">There are no email clients installed.</string>
     <string name="cv_link">https://traveljournalfinalproject.page.link/cv</string>
     <string name="jpg_ext">.jpg</string>
+    <string name="logo_sign_in">Logo sign in</string>
+    <string name="about_us_logo">about us logo</string>
+    <string name="empty">Empty :(</string>
+    <string name="date_up">Date ▲</string>
+    <string name="date_down">Date ▼</string>
+    <string name="price_up">Price ▲</string>
+    <string name="price_down">Price ▼</string>
+    <string name="rating_up">Rating ▲</string>
+    <string name="rating_down">Rating ▼</string>
+    <string name="welcome">Welcome</string>
+    <string name="image_expanded">image expanded</string>
+    <string name="travel_image_description">travel image description</string>
+    <string name="home">Home</string>
+    <string name="favourite">Favourite</string>
+    <string name="about_us">About Us</string>
+    <string name="contact">Contact</string>
+    <string name="communicate">Communicate</string>
+    <string name="share">Share</string>
+    <string name="find_cv">Find CV</string>
 </resources>

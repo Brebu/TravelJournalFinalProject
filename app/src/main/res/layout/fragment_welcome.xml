@@ -11,7 +11,7 @@
         android:layout_gravity="center"
         android:fontFamily="sans-serif-thin"
         android:gravity="center_vertical|center_horizontal"
-        android:text="Welcome"
+        android:text="@string/welcome"
         android:textAlignment="center"
         android:textSize="64sp" />
 

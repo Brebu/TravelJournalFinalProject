@@ -12,8 +12,8 @@
         android:layout_gravity="center"
         android:fontFamily="sans-serif-thin"
         android:gravity="center_vertical|center_horizontal"
-        android:text="Empty :("
+        android:text="@string/empty"
         android:textAlignment="center"
-        android:textSize="64sp" />
+        android:textSize="@dimen/sp_64" />
 
 </FrameLayout>

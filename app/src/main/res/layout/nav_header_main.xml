@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/nav_header_height"
     android:background="@drawable/side_nav_bar"
@@ -15,8 +14,8 @@
 
     <ImageView
         android:id="@+id/imageView_profilePicture"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="@dimen/dp_80"
+        android:layout_height="@dimen/dp_80"
         android:contentDescription="@string/profile_picture"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         app:layout_constraintBottom_toTopOf="@+id/textView_profileName"
@@ -25,9 +24,9 @@
 
     <TextView
         android:id="@+id/textView_profileName"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="@dimen/dp_8"
         android:paddingTop="@dimen/nav_header_vertical_spacing"
         android:text="@string/nav_header_title"
         android:textAppearance="@style/TextAppearance.AppCompat.Body1"
@@ -37,9 +36,9 @@
 
     <TextView
         android:id="@+id/textView_emailProfile"
-        android:layout_width="0dp"
+        android:layout_width="@dimen/dp_0"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginEnd="@dimen/dp_8"
         android:text="@string/nav_header_subtitle"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
