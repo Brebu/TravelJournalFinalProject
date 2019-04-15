@@ -15,7 +15,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "632006679611-6k17nqf4jglkcoiuhbkk28m3o865di42.apps.googleusercontent.com",
+          "client_id": "632006679611-e41n3lri13eqni99hje8o192boddgasg.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.brebu.traveljournalfinalproject",
+            "certificate_hash": "013416d0e56edd1af0c2a4898a9a813b8c9b6e63"
+          }
+        },
+        {
+          "client_id": "632006679611-hrdf6pccjn3a384608qd27131n4tj9in.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.brebu.traveljournalfinalproject",
